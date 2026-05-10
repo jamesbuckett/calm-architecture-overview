@@ -1,0 +1,2440 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A structured, visual primer on FINOS CALM (Common Architecture Language Model), tailored for architects and product leaders working in regulated financial-services environments." />
+  <meta name="author" content="James Buckett" />
+  <title>CALM — A Structured Primer in Architecture-as-Code</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&family=Noto+Sans+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       0. Reset & base
+       ============================================================ */
+    *, *::before, *::after { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+    body, h1, h2, h3, h4, h5, h6, p, ul, ol, dl, dd, figure, blockquote {
+      margin: 0;
+    }
+    ul, ol { padding: 0; list-style: none; }
+    img, svg { display: block; max-width: 100%; }
+    button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+    a { color: inherit; text-decoration: none; }
+    code, kbd, pre, samp { font-family: var(--font-mono); }
+
+    /* ============================================================
+       1. Tokens — light theme (default)
+       ============================================================ */
+    :root {
+      --color-bg: #FAFAFA;
+      --color-surface: #FFFFFF;
+      --color-surface-alt: #F4F4F2;
+      --color-text: #0A0A0A;
+      --color-text-secondary: #4B5563;
+      --color-text-tertiary: #6B7280;
+      --color-text-quaternary: #9CA3AF;
+      --color-border: #E5E7EB;
+      --color-border-strong: #D1D5DB;
+      --color-rule: #111111;
+      --color-accent: #0E5E57;
+      --color-accent-strong: #0B4641;
+      --color-accent-soft: rgba(14, 94, 87, 0.08);
+      --color-accent-tint: rgba(14, 94, 87, 0.04);
+      --color-amber: #B45309;
+      --color-amber-soft: rgba(180, 83, 9, 0.08);
+      --color-rose: #9F1239;
+      --color-rose-soft: rgba(159, 18, 57, 0.08);
+
+      --font-sans: "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "Noto Sans Mono", ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 24px;
+      --space-6: 32px;
+      --space-7: 48px;
+      --space-8: 64px;
+      --space-9: 96px;
+      --space-10: 128px;
+
+      --max-w: 1200px;
+      --max-w-text: 760px;
+
+      --rule: 1px solid var(--color-border);
+      --rule-strong: 1px solid var(--color-rule);
+
+      --transition: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ============================================================
+       2. Tokens — dark theme
+       ============================================================ */
+    [data-theme="dark"] {
+      --color-bg: #0B0B0B;
+      --color-surface: #131313;
+      --color-surface-alt: #1A1A1A;
+      --color-text: #F2F2F2;
+      --color-text-secondary: #B5B5B5;
+      --color-text-tertiary: #8C8C8C;
+      --color-text-quaternary: #5C5C5C;
+      --color-border: #262626;
+      --color-border-strong: #3A3A3A;
+      --color-rule: #F2F2F2;
+      --color-accent: #5EEAD4;
+      --color-accent-strong: #99F6E4;
+      --color-accent-soft: rgba(94, 234, 212, 0.10);
+      --color-accent-tint: rgba(94, 234, 212, 0.04);
+      --color-amber: #FBBF24;
+      --color-amber-soft: rgba(251, 191, 36, 0.10);
+      --color-rose: #FDA4AF;
+      --color-rose-soft: rgba(253, 164, 175, 0.08);
+    }
+
+    /* ============================================================
+       3. Body & typography
+       ============================================================ */
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-bg);
+      color: var(--color-text);
+      line-height: 1.6;
+      font-size: 16px;
+      font-weight: 400;
+      letter-spacing: -0.005em;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      transition: background-color var(--transition), color var(--transition);
+    }
+    @media (min-width: 720px) {
+      body { font-size: 17px; }
+    }
+
+    h1, h2, h3, h4 {
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: var(--color-text);
+    }
+    h1 { font-size: clamp(40px, 7vw, 84px); letter-spacing: -0.035em; }
+    h2 { font-size: clamp(28px, 4vw, 44px); letter-spacing: -0.025em; }
+    h3 { font-size: clamp(20px, 2.2vw, 26px); letter-spacing: -0.015em; }
+    h4 { font-size: 17px; letter-spacing: -0.01em; }
+
+    p { color: var(--color-text); max-width: 68ch; }
+    p + p { margin-top: var(--space-4); }
+    .lead { font-size: clamp(18px, 1.7vw, 22px); line-height: 1.5; color: var(--color-text-secondary); max-width: 68ch; }
+    .muted { color: var(--color-text-secondary); }
+
+    a.inline { color: var(--color-accent); border-bottom: 1px solid var(--color-accent-soft); transition: border-color var(--transition); }
+    a.inline:hover { border-color: var(--color-accent); }
+
+    .label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-text-tertiary);
+    }
+    .label-accent { color: var(--color-accent); }
+
+    /* skip link */
+    .skip-link {
+      position: absolute;
+      top: -100px;
+      left: 0;
+      background: var(--color-text);
+      color: var(--color-bg);
+      padding: var(--space-2) var(--space-4);
+      z-index: 1000;
+      font-family: var(--font-mono);
+      font-size: 12px;
+    }
+    .skip-link:focus { top: 0; }
+
+    /* ============================================================
+       4. Header / sticky nav
+       ============================================================ */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: color-mix(in srgb, var(--color-bg) 92%, transparent);
+      backdrop-filter: saturate(180%) blur(12px);
+      -webkit-backdrop-filter: saturate(180%) blur(12px);
+      border-bottom: var(--rule);
+    }
+    .header-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: var(--space-3) var(--space-5);
+      display: flex;
+      align-items: center;
+      gap: var(--space-5);
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-text-tertiary);
+    }
+    .brand-mark {
+      color: var(--color-text);
+      font-weight: 700;
+      letter-spacing: 0.22em;
+    }
+    .brand-divider {
+      width: 1px;
+      height: 14px;
+      background: var(--color-border-strong);
+    }
+    .nav-modules {
+      display: none;
+      align-items: center;
+      gap: var(--space-1);
+    }
+    .nav-modules a {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--color-text-tertiary);
+      padding: var(--space-2) var(--space-3);
+      border-radius: 2px;
+      transition: color var(--transition), background-color var(--transition);
+    }
+    .nav-modules a:hover, .nav-modules a.active {
+      color: var(--color-text);
+      background: var(--color-accent-tint);
+    }
+    @media (min-width: 880px) {
+      .nav-modules { display: flex; }
+    }
+    .theme-toggle {
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--color-border);
+      border-radius: 2px;
+      color: var(--color-text-secondary);
+      transition: border-color var(--transition), color var(--transition);
+    }
+    .theme-toggle:hover { border-color: var(--color-text); color: var(--color-text); }
+    .theme-toggle .icon-moon { display: none; }
+    [data-theme="dark"] .theme-toggle .icon-sun { display: none; }
+    [data-theme="dark"] .theme-toggle .icon-moon { display: block; }
+
+    /* ============================================================
+       5. Layout primitives
+       ============================================================ */
+    main { display: block; }
+    .container {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 var(--space-5);
+    }
+    .container-text {
+      max-width: var(--max-w-text);
+      margin: 0 auto;
+    }
+    .stack > * + * { margin-top: var(--space-5); }
+    .stack-tight > * + * { margin-top: var(--space-3); }
+    .stack-loose > * + * { margin-top: var(--space-7); }
+
+    /* ============================================================
+       6. Hero
+       ============================================================ */
+    .hero {
+      padding: var(--space-9) 0 var(--space-8);
+      border-bottom: var(--rule-strong);
+    }
+    .hero-meta {
+      display: flex;
+      gap: var(--space-5);
+      flex-wrap: wrap;
+      padding-bottom: var(--space-6);
+      border-bottom: var(--rule);
+      margin-bottom: var(--space-7);
+    }
+    .hero-meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+    .hero-meta-item .label { color: var(--color-text-quaternary); }
+    .hero-meta-value {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--color-text);
+      font-weight: 500;
+    }
+    .hero h1 {
+      max-width: 14ch;
+      margin-bottom: var(--space-5);
+    }
+    .hero h1 .title-divider {
+      display: block;
+      width: 64px;
+      height: 6px;
+      background: var(--color-accent);
+      margin: var(--space-5) 0;
+    }
+    .hero-sub {
+      font-size: clamp(18px, 1.7vw, 22px);
+      line-height: 1.5;
+      color: var(--color-text-secondary);
+      max-width: 50ch;
+      margin-bottom: var(--space-7);
+    }
+    .branding-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+      align-items: center;
+    }
+    .branding-row .label { margin-right: var(--space-3); }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      border: 1px solid var(--color-border);
+      border-radius: 2px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      color: var(--color-text-secondary);
+      transition: border-color var(--transition), color var(--transition);
+    }
+    .badge:hover { border-color: var(--color-text); color: var(--color-text); }
+    .badge svg { width: 14px; height: 14px; }
+
+    /* ============================================================
+       7. Module section
+       ============================================================ */
+    .module {
+      padding: var(--space-9) 0;
+      border-bottom: var(--rule-strong);
+    }
+    .module-header {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-5);
+      padding-bottom: var(--space-7);
+      margin-bottom: var(--space-7);
+      border-bottom: var(--rule);
+    }
+    @media (min-width: 880px) {
+      .module-header {
+        grid-template-columns: 200px 1fr;
+        gap: var(--space-6);
+      }
+    }
+    .module-number {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-text-tertiary);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-2);
+    }
+    .module-number .num {
+      color: var(--color-accent);
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: 0;
+      line-height: 1;
+      font-family: var(--font-mono);
+    }
+    .module-title h2 { margin-bottom: var(--space-3); }
+    .section { margin-top: var(--space-7); }
+    .section-title {
+      display: flex;
+      align-items: baseline;
+      gap: var(--space-3);
+      margin-bottom: var(--space-4);
+      padding-bottom: var(--space-2);
+      border-bottom: var(--rule);
+    }
+    .section-title .label { color: var(--color-accent); }
+    .section-title h3 { margin: 0; }
+    .section-body > * + * { margin-top: var(--space-4); }
+
+    /* ============================================================
+       8. Code specimen
+       ============================================================ */
+    .specimen {
+      margin-top: var(--space-5);
+      border: 1px solid var(--color-border);
+      border-radius: 2px;
+      background: var(--color-surface);
+      overflow: hidden;
+    }
+    .specimen-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-4);
+      border-bottom: var(--rule);
+      background: var(--color-surface-alt);
+    }
+    .specimen-header .filename {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--color-text-secondary);
+    }
+    .specimen-header .lang {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-text-tertiary);
+      padding: 2px 6px;
+      border: 1px solid var(--color-border);
+      border-radius: 2px;
+    }
+    .specimen pre {
+      margin: 0;
+      padding: var(--space-4) var(--space-5);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--color-text);
+      overflow-x: auto;
+      tab-size: 2;
+    }
+    .specimen code { color: var(--color-text); }
+    .tok-key { color: var(--color-accent); }
+    .tok-str { color: var(--color-amber); }
+    .tok-num { color: var(--color-text); }
+    .tok-cmt { color: var(--color-text-tertiary); font-style: italic; }
+    .tok-pun { color: var(--color-text-tertiary); }
+
+    /* inline code */
+    .ic {
+      font-family: var(--font-mono);
+      font-size: 0.9em;
+      padding: 1px 6px;
+      background: var(--color-surface-alt);
+      border: 1px solid var(--color-border);
+      border-radius: 2px;
+      color: var(--color-text);
+    }
+
+    /* ============================================================
+       9. Tables
+       ============================================================ */
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--color-border);
+      border-radius: 2px;
+      margin-top: var(--space-5);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 640px;
+      font-size: 14px;
+    }
+    th, td {
+      padding: var(--space-3) var(--space-4);
+      text-align: left;
+      vertical-align: top;
+      border-bottom: var(--rule);
+    }
+    thead th {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--color-text-tertiary);
+      font-weight: 500;
+      background: var(--color-surface-alt);
+      border-bottom: 1px solid var(--color-rule);
+    }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody th {
+      font-weight: 600;
+      color: var(--color-text);
+      background: var(--color-surface);
+    }
+    .table-mono { font-family: var(--font-mono); font-size: 12px; }
+    .check { color: var(--color-accent); font-weight: 700; }
+    .cross { color: var(--color-text-quaternary); }
+    .partial { color: var(--color-amber); font-weight: 600; }
+
+    /* ============================================================
+       10. Diagrams (inline SVG container)
+       ============================================================ */
+    .diagram {
+      margin-top: var(--space-5);
+      padding: var(--space-6) var(--space-5);
+      border: 1px solid var(--color-border);
+      border-radius: 2px;
+      background: var(--color-surface);
+      overflow-x: auto;
+    }
+    .diagram-caption {
+      margin-top: var(--space-3);
+      padding-top: var(--space-3);
+      border-top: var(--rule);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      color: var(--color-text-tertiary);
+      text-transform: uppercase;
+    }
+    .diagram-caption strong { color: var(--color-text); font-weight: 600; }
+    .diagram svg {
+      margin: 0 auto;
+      display: block;
+      width: 100%;
+      max-width: 920px;
+      height: auto;
+      color: var(--color-text);
+    }
+    .diagram .stroke { stroke: var(--color-text); }
+    .diagram .stroke-soft { stroke: var(--color-border-strong); }
+    .diagram .stroke-accent { stroke: var(--color-accent); }
+    .diagram .fill-bg { fill: var(--color-surface); }
+    .diagram .fill-text { fill: var(--color-text); }
+    .diagram .fill-secondary { fill: var(--color-text-secondary); }
+    .diagram .fill-tertiary { fill: var(--color-text-tertiary); }
+    .diagram .fill-accent { fill: var(--color-accent); }
+    .diagram .fill-accent-soft { fill: var(--color-accent-soft); }
+    .diagram .fill-amber { fill: var(--color-amber); }
+    .diagram .fill-amber-soft { fill: var(--color-amber-soft); }
+    .diagram .fill-rose-soft { fill: var(--color-rose-soft); }
+    .diagram .fill-surface-alt { fill: var(--color-surface-alt); }
+
+    .diagram text {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      fill: var(--color-text);
+    }
+    .diagram text.mono { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .diagram text.title { font-weight: 700; font-size: 13px; }
+    .diagram text.muted { fill: var(--color-text-tertiary); }
+    .diagram text.accent { fill: var(--color-accent); }
+
+    /* ============================================================
+       11. Callout boxes
+       ============================================================ */
+    .callout {
+      margin-top: var(--space-5);
+      border: 1px solid var(--color-border);
+      border-radius: 2px;
+      background: var(--color-surface);
+    }
+    .callout-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-5);
+      border-bottom: var(--rule);
+      background: var(--color-surface-alt);
+    }
+    .callout-header .label { color: var(--color-accent); }
+    .callout-body { padding: var(--space-5); }
+    .callout-body ul { display: grid; gap: var(--space-3); }
+    .callout-body li {
+      display: grid;
+      grid-template-columns: 28px 1fr;
+      gap: var(--space-3);
+      align-items: start;
+    }
+    .callout-body li::before {
+      content: counter(li-counter);
+      counter-increment: li-counter;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-accent);
+      letter-spacing: 0.08em;
+      padding-top: 2px;
+    }
+    .callout-body ul { counter-reset: li-counter; }
+
+    .callout.callout-checkpoint .callout-header { background: var(--color-accent-tint); border-bottom-color: var(--color-accent-soft); }
+    .callout.callout-checkpoint .callout-header .label { color: var(--color-accent); }
+    .callout.callout-checkpoint { border-color: var(--color-accent-soft); }
+    .callout.callout-checkpoint .callout-body ol {
+      display: grid;
+      gap: var(--space-4);
+      counter-reset: q;
+    }
+    .callout.callout-checkpoint .callout-body ol li {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: var(--space-3);
+      align-items: start;
+    }
+    .callout.callout-checkpoint .callout-body ol li::before {
+      content: "Q" counter(q);
+      counter-increment: q;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--color-accent);
+      padding-top: 3px;
+    }
+
+    .callout.callout-note .callout-header { background: var(--color-amber-soft); }
+    .callout.callout-note .callout-header .label { color: var(--color-amber); }
+    .callout.callout-note { border-color: var(--color-amber-soft); }
+
+    /* ============================================================
+       12. Two-column / three-column grid
+       ============================================================ */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-4);
+      margin-top: var(--space-5);
+    }
+    @media (min-width: 720px) {
+      .grid-2 { grid-template-columns: repeat(2, 1fr); }
+      .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    }
+    .card {
+      padding: var(--space-5);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 2px;
+    }
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-3);
+    }
+    .card-title h4 { margin: 0; }
+    .card-num {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--color-accent);
+      letter-spacing: 0.18em;
+    }
+    .card p { font-size: 14px; color: var(--color-text-secondary); }
+
+    /* ============================================================
+       13. Cheat sheet
+       ============================================================ */
+    .cheat-sheet {
+      padding: var(--space-9) 0;
+      background:
+        repeating-linear-gradient(
+          to bottom,
+          var(--color-bg) 0,
+          var(--color-bg) 28px,
+          var(--color-border) 28px,
+          var(--color-border) 29px
+        );
+      border-bottom: var(--rule-strong);
+    }
+    .cheat-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-rule);
+      padding: var(--space-7);
+      box-shadow: 0 0 0 4px var(--color-bg);
+    }
+    .cheat-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+      margin-top: var(--space-6);
+      padding-top: var(--space-6);
+      border-top: var(--rule);
+    }
+    @media (min-width: 720px) {
+      .cheat-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-7); }
+    }
+    @media (min-width: 1024px) {
+      .cheat-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    .cheat-block {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    .cheat-block h4 {
+      padding-bottom: var(--space-2);
+      border-bottom: var(--rule);
+      margin-bottom: var(--space-2);
+    }
+    .cheat-block dl {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: var(--space-2) var(--space-4);
+      font-size: 13px;
+    }
+    .cheat-block dt {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--color-accent);
+    }
+    .cheat-block dd { margin: 0; color: var(--color-text-secondary); }
+    .cheat-block ul {
+      display: grid;
+      gap: var(--space-2);
+      font-size: 13px;
+      color: var(--color-text-secondary);
+    }
+    .cheat-block ul li { padding-left: var(--space-4); position: relative; }
+    .cheat-block ul li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 11px;
+      width: 8px;
+      height: 1px;
+      background: var(--color-accent);
+    }
+    .cheat-block .mini-table {
+      font-size: 12px;
+      width: 100%;
+      border-top: var(--rule);
+    }
+    .cheat-block .mini-table th,
+    .cheat-block .mini-table td {
+      padding: var(--space-2) var(--space-2);
+      border-bottom: var(--rule);
+    }
+    .cheat-block .mini-table th {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--color-text-tertiary);
+      font-weight: 500;
+      background: transparent;
+      border-bottom: 1px solid var(--color-rule);
+      text-align: left;
+    }
+    .cheat-block code, .cheat-block .ic {
+      background: var(--color-surface-alt);
+      border: 1px solid var(--color-border);
+    }
+
+    /* ============================================================
+       14. Footer
+       ============================================================ */
+    footer {
+      padding: var(--space-8) 0 var(--space-7);
+      color: var(--color-text-tertiary);
+    }
+    footer .footer-inner {
+      display: grid;
+      gap: var(--space-5);
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 720px) {
+      footer .footer-inner {
+        grid-template-columns: 2fr 1fr 1fr;
+        gap: var(--space-6);
+      }
+    }
+    footer h5 {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-text-tertiary);
+      font-weight: 500;
+      margin-bottom: var(--space-3);
+    }
+    footer ul { display: grid; gap: var(--space-2); font-size: 13px; }
+    footer .colophon { font-size: 13px; max-width: 50ch; }
+    footer hr { margin: var(--space-6) 0 var(--space-4); border: 0; border-top: var(--rule); }
+
+    /* ============================================================
+       15. Reveal animation
+       ============================================================ */
+    @media (prefers-reduced-motion: no-preference) {
+      .reveal {
+        opacity: 0;
+        transform: translateY(12px);
+        transition: opacity 600ms cubic-bezier(0.2, 0, 0.2, 1),
+                    transform 600ms cubic-bezier(0.2, 0, 0.2, 1);
+      }
+      .reveal.in {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    /* ============================================================
+       16. Print
+       ============================================================ */
+    @media print {
+      .site-header, .theme-toggle { display: none; }
+      .module, .hero { padding: 16px 0; }
+      body { background: white; color: black; font-size: 11pt; }
+    }
+
+    /* ============================================================
+       17. Focus styles
+       ============================================================ */
+    :focus-visible {
+      outline: 2px solid var(--color-accent);
+      outline-offset: 2px;
+      border-radius: 2px;
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <!-- ==========================================================
+       HEADER
+       ========================================================== -->
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#top" aria-label="CALM tutorial — top of page">
+        <span class="brand-mark">CALM</span>
+        <span class="brand-divider" aria-hidden="true"></span>
+        <span class="brand-meta">A Tutorial · v1.0</span>
+      </a>
+      <nav class="nav-modules" aria-label="Module navigation">
+        <a href="#m1" data-target="m1">M1 · Origin</a>
+        <a href="#m2" data-target="m2">M2 · Concepts</a>
+        <a href="#m3" data-target="m3">M3 · Anatomy</a>
+        <a href="#m4" data-target="m4">M4 · Controls</a>
+        <a href="#m5" data-target="m5">M5 · Tooling</a>
+        <a href="#cheat" data-target="cheat">Cheat Sheet</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="main">
+
+    <!-- ==========================================================
+         HERO
+         ========================================================== -->
+    <section class="hero" id="top">
+      <div class="container">
+
+        <div class="hero-meta reveal">
+          <div class="hero-meta-item">
+            <span class="label">Document</span>
+            <span class="hero-meta-value">CALM-PRIMER · v1.0</span>
+          </div>
+          <div class="hero-meta-item">
+            <span class="label">Released</span>
+            <span class="hero-meta-value">2026-05-10</span>
+          </div>
+          <div class="hero-meta-item">
+            <span class="label">Reading time</span>
+            <span class="hero-meta-value">~25 minutes</span>
+          </div>
+          <div class="hero-meta-item">
+            <span class="label">Audience</span>
+            <span class="hero-meta-value">Architects · Platform PMs · Auditors</span>
+          </div>
+        </div>
+
+        <div class="reveal">
+          <div class="label" style="margin-bottom: var(--space-3);">A Structured Primer</div>
+          <h1>
+            CALM<span class="title-divider" aria-hidden="true"></span>
+            Architecture, made <em style="font-style: normal; color: var(--color-accent);">machine&#8209;readable</em>.
+          </h1>
+          <p class="hero-sub">
+            A five-module tutorial on the FINOS <strong>Common Architecture Language Model</strong>: from origin and motivation, through anatomy and controls, to a practical workflow you can run on a regulated platform.
+          </p>
+        </div>
+
+        <div class="branding-row reveal">
+          <span class="label">By</span>
+          <a class="badge" href="https://github.com/jamesbuckett" rel="noopener noreferrer" target="_blank" aria-label="GitHub: jamesbuckett">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+            github.com/jamesbuckett
+          </a>
+          <a class="badge" href="https://twitter.com/jamesbuckett" rel="noopener noreferrer" target="_blank" aria-label="Twitter / X: @jamesbuckett">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"/></svg>
+            @jamesbuckett
+          </a>
+          <a class="badge" href="https://www.linkedin.com/in/jamesbuckett" rel="noopener noreferrer" target="_blank" aria-label="LinkedIn: jamesbuckett">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+            in/jamesbuckett
+          </a>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ==========================================================
+         MODULE 01 — ORIGIN AND MOTIVATION
+         ========================================================== -->
+    <section class="module" id="m1">
+      <div class="container">
+
+        <header class="module-header reveal">
+          <div class="module-number">
+            <span class="label">Module</span>
+            <span class="num">01</span>
+            <span class="label">Origin &amp; Motivation</span>
+          </div>
+          <div class="module-title">
+            <h2>Why a new architecture language, in 2025?</h2>
+            <p class="lead">CALM did not appear in a vacuum. It is a deliberate response to a recurring failure mode in regulated industries — the gap between architecture <em>diagrams</em> on a wiki and architecture <em>contracts</em> a CI pipeline can enforce.</p>
+          </div>
+        </header>
+
+        <div class="container-text">
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">1.1</span>
+              <h3>A short history</h3>
+            </header>
+            <div class="section-body">
+              <p>The <strong>Common Architecture Language Model</strong> began as an internal architecture-as-code initiative inside <strong>Morgan Stanley</strong>, where reference architectures had to satisfy not only engineering goals but also a tight lattice of internal control standards and external regulators. In the early 2020s, that team faced a familiar problem: every architecture document was a bespoke artefact, every review cycle was manual, and every drift between design and reality was discovered late.</p>
+              <p>In 2024 the work was contributed to <strong>FINOS</strong> — the Fintech Open Source Foundation, hosted under the Linux Foundation — and incubated inside the new <strong>Architecture as Code (AasC) Community of Interest</strong>. After a year of public iteration, CALM <strong>v1.0</strong> was released in <strong>August 2025</strong>, with active contributions from Tier&nbsp;1 banks and platform vendors. It is now one of the very few openly governed, machine-readable architecture standards designed with regulated environments in mind.</p>
+            </div>
+
+            <figure class="diagram" role="img" aria-label="Timeline showing CALM milestones from internal Morgan Stanley work in 2021 through FINOS donation in 2024 to the v1.0 release in August 2025.">
+              <svg viewBox="0 0 880 180" preserveAspectRatio="xMidYMid meet">
+                <!-- baseline -->
+                <line x1="40" y1="100" x2="840" y2="100" class="stroke-soft" stroke-width="1"/>
+                <line x1="40" y1="100" x2="840" y2="100" class="stroke" stroke-width="0.5" stroke-dasharray="2 4"/>
+
+                <!-- Milestone helper: marker + year + label -->
+                <!-- 2021 -->
+                <g transform="translate(80,100)">
+                  <circle r="5" class="fill-bg stroke" stroke-width="1.2"/>
+                  <text x="0" y="-22" class="mono" text-anchor="middle">2021</text>
+                  <text x="0" y="36" class="title" text-anchor="middle">Internal AasC</text>
+                  <text x="0" y="54" class="muted" text-anchor="middle">Morgan Stanley</text>
+                </g>
+
+                <!-- 2023 -->
+                <g transform="translate(240,100)">
+                  <circle r="5" class="fill-bg stroke" stroke-width="1.2"/>
+                  <text x="0" y="-22" class="mono" text-anchor="middle">2023</text>
+                  <text x="0" y="36" class="title" text-anchor="middle">CoI formed</text>
+                  <text x="0" y="54" class="muted" text-anchor="middle">FINOS AasC</text>
+                </g>
+
+                <!-- 2024 -->
+                <g transform="translate(420,100)">
+                  <circle r="5" class="fill-bg stroke" stroke-width="1.2"/>
+                  <text x="0" y="-22" class="mono" text-anchor="middle">2024</text>
+                  <text x="0" y="36" class="title" text-anchor="middle">Donation</text>
+                  <text x="0" y="54" class="muted" text-anchor="middle">spec + CLI public</text>
+                </g>
+
+                <!-- Aug 2025 -->
+                <g transform="translate(600,100)">
+                  <circle r="7" class="fill-accent" stroke="none"/>
+                  <circle r="11" fill="none" class="stroke-accent" stroke-width="1"/>
+                  <text x="0" y="-22" class="mono accent" text-anchor="middle">Aug 2025</text>
+                  <text x="0" y="36" class="title accent" text-anchor="middle">v1.0 release</text>
+                  <text x="0" y="54" class="muted" text-anchor="middle">stable schema</text>
+                </g>
+
+                <!-- 2026 -->
+                <g transform="translate(780,100)">
+                  <circle r="5" class="fill-bg stroke" stroke-width="1.2"/>
+                  <text x="0" y="-22" class="mono" text-anchor="middle">2026</text>
+                  <text x="0" y="36" class="title" text-anchor="middle">FS adoption</text>
+                  <text x="0" y="54" class="muted" text-anchor="middle">patterns &amp; controls</text>
+                </g>
+              </svg>
+              <figcaption class="diagram-caption"><strong>Fig 1.1</strong> — Timeline of CALM evolution. Years approximate; verify against the FINOS project page.</figcaption>
+            </figure>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">1.2</span>
+              <h3>The problem CALM was designed to solve</h3>
+            </header>
+            <div class="section-body">
+              <p>Existing architecture artefacts each fall short on at least one axis that matters to a regulated platform team:</p>
+            </div>
+
+            <div class="grid grid-2">
+              <div class="card">
+                <div class="card-title"><span class="card-num">A</span><h4>C4 Model</h4></div>
+                <p>Brilliant for <em>communicating</em> architecture to humans. But the artefact is a diagram — there is no schema for a continuous-integration job to validate against, and no first-class place to attach a control.</p>
+              </div>
+              <div class="card">
+                <div class="card-title"><span class="card-num">B</span><h4>ArchiMate / TOGAF</h4></div>
+                <p>Comprehensive enterprise modelling, often locked behind heavyweight tooling and rarely loved by application engineers. Closer to a process framework than a developer-readable artefact.</p>
+              </div>
+              <div class="card">
+                <div class="card-title"><span class="card-num">C</span><h4>UML</h4></div>
+                <p>Formal but increasingly out of fashion in cloud-native shops. Component diagrams describe code structure better than they describe distributed systems and identity flows.</p>
+              </div>
+              <div class="card">
+                <div class="card-title"><span class="card-num">D</span><h4>Plain Mermaid / draw.io</h4></div>
+                <p>Quick, readable, and easy to commit to Git. But every team invents its own conventions; nothing is validated, and nothing carries semantic meaning a tool can act on.</p>
+              </div>
+              <div class="card">
+                <div class="card-title"><span class="card-num">E</span><h4>Ad-hoc YAML / JSON</h4></div>
+                <p>The home-grown "we&apos;ll just describe our architecture in YAML" approach. Different across every team, no shared schema, no shared patterns, no portability.</p>
+              </div>
+              <div class="card">
+                <div class="card-title"><span class="card-num">F</span><h4>Terraform / Crossplane</h4></div>
+                <p>These describe <em>infrastructure</em>, not architectural intent. A Terraform module knows that it provisions a load balancer; it does not know that the load balancer terminates an external trust boundary.</p>
+              </div>
+            </div>
+
+            <p style="margin-top: var(--space-5);">CALM is not a replacement for any of these. It is a complement: a <strong>machine-readable, schema-validated, control-aware</strong> source of truth that the others can render from, plug into, or reference.</p>
+
+            <figure class="diagram" role="img" aria-label="A two-by-two map placing C4, ArchiMate, plain Mermaid, and CALM along the axes 'visual versus machine-readable' and 'generic versus regulated industry fit'.">
+              <svg viewBox="0 0 880 460" preserveAspectRatio="xMidYMid meet">
+                <!-- axes -->
+                <line x1="80" y1="40" x2="80" y2="420" class="stroke" stroke-width="1.2"/>
+                <line x1="80" y1="420" x2="840" y2="420" class="stroke" stroke-width="1.2"/>
+
+                <!-- arrowheads -->
+                <polyline points="76,46 80,38 84,46" fill="none" class="stroke" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline points="834,416 842,420 834,424" fill="none" class="stroke" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+
+                <!-- axis labels -->
+                <text x="40" y="40" class="mono" transform="rotate(-90, 40, 40)" text-anchor="end">Machine-readable</text>
+                <text x="40" y="420" class="mono" transform="rotate(-90, 40, 420)" text-anchor="start">Visual only</text>
+                <text x="80" y="450" class="mono" text-anchor="start">Generic</text>
+                <text x="840" y="450" class="mono" text-anchor="end">Regulated FS-fit</text>
+
+                <!-- gridlines (mid) -->
+                <line x1="80" y1="230" x2="840" y2="230" class="stroke-soft" stroke-width="0.5" stroke-dasharray="3 4"/>
+                <line x1="460" y1="40" x2="460" y2="420" class="stroke-soft" stroke-width="0.5" stroke-dasharray="3 4"/>
+
+                <!-- placements -->
+                <!-- Mermaid (visual, generic) -->
+                <g transform="translate(180,330)">
+                  <rect x="-50" y="-22" width="100" height="44" class="fill-bg stroke-soft" stroke-width="1" rx="2"/>
+                  <text x="0" y="-2" class="title" text-anchor="middle">Mermaid</text>
+                  <text x="0" y="14" class="muted" text-anchor="middle">quick sketches</text>
+                </g>
+
+                <!-- C4 (visual, somewhat structured but generic) -->
+                <g transform="translate(280,200)">
+                  <rect x="-50" y="-22" width="100" height="44" class="fill-bg stroke-soft" stroke-width="1" rx="2"/>
+                  <text x="0" y="-2" class="title" text-anchor="middle">C4 Model</text>
+                  <text x="0" y="14" class="muted" text-anchor="middle">human comms</text>
+                </g>
+
+                <!-- ArchiMate (machine-ish, regulated-leaning) -->
+                <g transform="translate(580,160)">
+                  <rect x="-60" y="-22" width="120" height="44" class="fill-bg stroke-soft" stroke-width="1" rx="2"/>
+                  <text x="0" y="-2" class="title" text-anchor="middle">ArchiMate</text>
+                  <text x="0" y="14" class="muted" text-anchor="middle">enterprise EA</text>
+                </g>
+
+                <!-- Terraform (machine, generic) -->
+                <g transform="translate(220,90)">
+                  <rect x="-60" y="-22" width="120" height="44" class="fill-bg stroke-soft" stroke-width="1" rx="2"/>
+                  <text x="0" y="-2" class="title" text-anchor="middle">Terraform</text>
+                  <text x="0" y="14" class="muted" text-anchor="middle">infra-as-code</text>
+                </g>
+
+                <!-- CALM (machine, regulated) -->
+                <g transform="translate(700,80)">
+                  <rect x="-66" y="-26" width="132" height="52" class="fill-accent-soft stroke-accent" stroke-width="1.5" rx="2"/>
+                  <text x="0" y="-3" class="title accent" text-anchor="middle">CALM</text>
+                  <text x="0" y="15" class="mono accent" text-anchor="middle">v1.0 / FINOS</text>
+                </g>
+
+                <!-- annotation -->
+                <g transform="translate(700, 80)">
+                  <line x1="-90" y1="40" x2="-160" y2="120" class="stroke-soft" stroke-width="0.6"/>
+                  <text x="-170" y="125" class="mono muted" text-anchor="end">schema-validated +</text>
+                  <text x="-170" y="140" class="mono muted" text-anchor="end">controls-native</text>
+                </g>
+
+              </svg>
+              <figcaption class="diagram-caption"><strong>Fig 1.2</strong> — Where CALM sits relative to adjacent artefacts. The upper-right quadrant is the historically empty one.</figcaption>
+            </figure>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">1.3</span>
+              <h3>Community and contributors</h3>
+            </header>
+            <div class="section-body">
+              <p>CALM is governed under <strong>FINOS</strong>, the only fintech-focused open source foundation operating with formal Linux Foundation governance. That matters: the spec is contributed to and consumed by institutions whose risk appetites usually preclude unsigned third-party tooling. The FINOS process — IP cleared, contributor-licence-agreement based, open meetings — is what makes CALM legally usable inside Tier 1 banks in the first place.</p>
+              <p>Active contributors and consumers include large global banks, the FINOS staff team, and a growing number of platform-engineering vendors. Pattern libraries from member firms are increasingly being published to the <strong>CALM Hub</strong>, the public reference catalogue maintained by the project.</p>
+              <p>The canonical sources are:</p>
+              <ul class="stack-tight" style="margin-top: var(--space-3);">
+                <li>· <span class="ic">github.com/finos/architecture-as-code</span> — the monorepo containing the schema, CLI, hub UI, and reference patterns.</li>
+                <li>· <span class="ic">npmjs.com/package/@finos/calm-cli</span> — the official command-line tool.</li>
+                <li>· FINOS project page, accessed through finos.org under the AasC Community of Interest.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">1.4</span>
+              <h3>Where CALM fits in the Architecture-as-Code movement</h3>
+            </header>
+            <div class="section-body">
+              <p>The Architecture-as-Code movement asks the same question that Infrastructure-as-Code answered a decade ago: <em>what would happen if our most authoritative architectural decisions lived in a Git repository, were peer-reviewed in pull requests, and were enforced by CI?</em> CALM provides one of the missing pieces — a portable, vendor-neutral file format with the semantic richness to host controls and patterns, not just shapes and lines.</p>
+              <p>Crucially, CALM is positioned <em>upstream</em> of IaC. Terraform, Crossplane, Helm and Kustomize describe how a system is realised; CALM describes what the system is supposed to be in the first place. The two are complementary, and both belong in the same source-controlled repository.</p>
+            </div>
+          </div>
+
+          <div class="callout reveal" role="region" aria-label="Module 1 key takeaways">
+            <header class="callout-header">
+              <span class="label">Key Takeaways · Module 01</span>
+            </header>
+            <div class="callout-body">
+              <ul>
+                <li>CALM was created at Morgan Stanley, donated to FINOS, and reached <strong>v1.0 in August 2025</strong>. It is governed in the open under Linux Foundation rules.</li>
+                <li>Its purpose is to fill the gap between visual architecture (C4, ArchiMate) and infrastructure-as-code — providing a <strong>schema-validated, control-aware</strong> source of truth.</li>
+                <li>It complements rather than replaces existing tools. C4 diagrams can be rendered <em>from</em> a CALM document; Terraform can be informed <em>by</em> one.</li>
+                <li>It is purpose-built for <strong>regulated industries</strong>: open governance, controls as first-class citizens, and reusable patterns that can encode reference architectures.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout callout-checkpoint reveal" role="region" aria-label="Module 1 checkpoint questions">
+            <header class="callout-header">
+              <span class="label">Checkpoint · Module 01</span>
+            </header>
+            <div class="callout-body">
+              <ol>
+                <li>In your own words, name two <em>architectural</em> properties (not infrastructure) that a Terraform module cannot capture, and that you would want a CALM document to capture instead.</li>
+                <li>If your firm already mandates C4 for solution design, what is the strongest argument for adopting CALM <em>alongside</em> C4 rather than instead of it?</li>
+              </ol>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ==========================================================
+         MODULE 02 — CONCEPTUAL OVERVIEW
+         ========================================================== -->
+    <section class="module" id="m2">
+      <div class="container">
+
+        <header class="module-header reveal">
+          <div class="module-number">
+            <span class="label">Module</span>
+            <span class="num">02</span>
+            <span class="label">Conceptual Overview</span>
+          </div>
+          <div class="module-title">
+            <h2>Six primitives, one schema, and a single hard distinction.</h2>
+            <p class="lead">CALM is small. The whole language can be sketched on the back of an envelope. Most of its power comes from a clean separation between <em>Patterns</em> and <em>Architectures</em> — and from making <em>Controls</em> a first-class citizen.</p>
+          </div>
+        </header>
+
+        <div class="container-text">
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">2.1</span>
+              <h3>The six core building blocks</h3>
+            </header>
+            <div class="section-body">
+              <p>Every CALM document is composed from six primitives. If you can describe a system using these six, you have a valid CALM model.</p>
+            </div>
+
+            <div class="grid grid-3">
+              <div class="card">
+                <div class="card-title"><span class="card-num">01</span><h4>Nodes</h4></div>
+                <p>The <em>things</em> in your architecture. A node may be a service, a database, a network segment, a person/actor, an external system, or a logical grouping.</p>
+              </div>
+              <div class="card">
+                <div class="card-title"><span class="card-num">02</span><h4>Relationships</h4></div>
+                <p>Typed edges between nodes. CALM knows the difference between <span class="ic">connects</span>, <span class="ic">deployed-in</span>, <span class="ic">composed-of</span> and <span class="ic">interacts</span>.</p>
+              </div>
+              <div class="card">
+                <div class="card-title"><span class="card-num">03</span><h4>Interfaces</h4></div>
+                <p>How a node exposes itself: a host:port pair, an HTTP route, a gRPC service, a queue topic. Interfaces are what relationships actually attach to.</p>
+              </div>
+              <div class="card">
+                <div class="card-title"><span class="card-num">04</span><h4>Controls</h4></div>
+                <p>Policy, security, and compliance requirements bound to a node or relationship. Controls reference external requirement catalogues and concrete implementations.</p>
+              </div>
+              <div class="card">
+                <div class="card-title"><span class="card-num">05</span><h4>Flows</h4></div>
+                <p>A named, sequenced traversal across multiple relationships. Use flows to describe a sign-in journey, a payment path, or any cross-component use case.</p>
+              </div>
+              <div class="card">
+                <div class="card-title"><span class="card-num">06</span><h4>Metadata</h4></div>
+                <p>Extensible key/value extension points — for ownership, environment tags, classification, regulatory scope, or anything your governance model needs.</p>
+              </div>
+            </div>
+
+            <figure class="diagram" role="img" aria-label="Six labelled boxes showing the CALM core primitives — Nodes, Relationships, Interfaces, Controls, Flows, and Metadata — connected by hairlines showing how they reference one another.">
+              <svg viewBox="0 0 880 360" preserveAspectRatio="xMidYMid meet">
+                <!-- center: Nodes -->
+                <g transform="translate(440,180)">
+                  <rect x="-90" y="-40" width="180" height="80" class="fill-accent-soft stroke-accent" stroke-width="1.5" rx="2"/>
+                  <text x="0" y="-8" class="title accent" text-anchor="middle">Nodes</text>
+                  <text x="0" y="14" class="mono accent" text-anchor="middle">unique-id · type</text>
+                </g>
+
+                <!-- relationships (top) -->
+                <g transform="translate(440,40)">
+                  <rect x="-80" y="-26" width="160" height="52" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-3" class="title" text-anchor="middle">Relationships</text>
+                  <text x="0" y="15" class="mono muted" text-anchor="middle">typed edges</text>
+                </g>
+
+                <!-- interfaces (left) -->
+                <g transform="translate(140,180)">
+                  <rect x="-80" y="-26" width="160" height="52" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-3" class="title" text-anchor="middle">Interfaces</text>
+                  <text x="0" y="15" class="mono muted" text-anchor="middle">how nodes expose</text>
+                </g>
+
+                <!-- controls (right) -->
+                <g transform="translate(740,180)">
+                  <rect x="-80" y="-26" width="160" height="52" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-3" class="title" text-anchor="middle">Controls</text>
+                  <text x="0" y="15" class="mono muted" text-anchor="middle">policy / compliance</text>
+                </g>
+
+                <!-- flows (bottom-left) -->
+                <g transform="translate(280,310)">
+                  <rect x="-80" y="-26" width="160" height="52" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-3" class="title" text-anchor="middle">Flows</text>
+                  <text x="0" y="15" class="mono muted" text-anchor="middle">named traversals</text>
+                </g>
+
+                <!-- metadata (bottom-right) -->
+                <g transform="translate(600,310)">
+                  <rect x="-80" y="-26" width="160" height="52" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-3" class="title" text-anchor="middle">Metadata</text>
+                  <text x="0" y="15" class="mono muted" text-anchor="middle">extensible tags</text>
+                </g>
+
+                <!-- connecting hairlines -->
+                <line x1="440" y1="66" x2="440" y2="140" class="stroke-soft" stroke-width="1"/>
+                <line x1="220" y1="180" x2="350" y2="180" class="stroke-soft" stroke-width="1"/>
+                <line x1="660" y1="180" x2="530" y2="180" class="stroke-soft" stroke-width="1"/>
+                <line x1="350" y1="220" x2="280" y2="284" class="stroke-soft" stroke-width="1"/>
+                <line x1="530" y1="220" x2="600" y2="284" class="stroke-soft" stroke-width="1"/>
+
+                <!-- arrowheads (subtle) -->
+                <circle cx="440" cy="140" r="2.4" class="fill-accent"/>
+                <circle cx="350" cy="180" r="2.4" class="fill-accent"/>
+                <circle cx="530" cy="180" r="2.4" class="fill-accent"/>
+              </svg>
+              <figcaption class="diagram-caption"><strong>Fig 2.1</strong> — The six CALM primitives. Nodes are central; everything else either describes them, connects them, or governs them.</figcaption>
+            </figure>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">2.2</span>
+              <h3>The schema, and why JSON Schema</h3>
+            </header>
+            <div class="section-body">
+              <p>The CALM specification is published as a set of <strong>JSON Schema</strong> documents. This is a deliberate choice. JSON Schema is mature, language-agnostic, mechanically validatable in any modern toolchain, and extensible — a CALM-Hub pattern can extend the base schema to add stricter constraints (e.g. "every node must declare an owner").</p>
+              <p>Concretely, every CALM document begins with a <span class="ic">$schema</span> reference. The CLI uses that reference to fetch and apply the appropriate validator. This matters in CI: a malformed CALM document fails the build the same way malformed Terraform does.</p>
+            </div>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">2.3</span>
+              <h3>Pattern vs Architecture — the one distinction that matters</h3>
+            </header>
+            <div class="section-body">
+              <p>This is the single most important conceptual move in CALM.</p>
+              <ul class="stack-tight" style="margin-top: var(--space-3);">
+                <li>· A <strong>Pattern</strong> is a <em>template</em>. It declares the structure that any conforming architecture must follow, the controls that must be present, and the placeholders that an architect must fill in. Think of it as the regulator-approved reference architecture.</li>
+                <li>· An <strong>Architecture</strong> is an <em>instance</em>. It fills in the placeholders, names concrete services, and adds project-specific detail. It must validate against the Pattern it claims to implement.</li>
+              </ul>
+              <p style="margin-top: var(--space-4);">If you have used JSON Schema before, the analogy is exact: <strong>Pattern is to Architecture as JSON Schema is to a JSON document</strong>. The CALM CLI&apos;s validate command checks the Architecture against both the base CALM schema <em>and</em> the Pattern it references.</p>
+            </div>
+
+            <figure class="diagram" role="img" aria-label="Two side-by-side document outlines. The left document is labelled 'Pattern' and contains placeholders. The right document is labelled 'Architecture' and contains concrete values. An arrow labelled instantiates points from Pattern to Architecture.">
+              <svg viewBox="0 0 880 320" preserveAspectRatio="xMidYMid meet">
+                <!-- Pattern (left) -->
+                <g transform="translate(60,40)">
+                  <rect x="0" y="0" width="320" height="240" class="fill-bg stroke" stroke-width="1.2" rx="2"/>
+                  <text x="20" y="32" class="mono muted">PATTERN · zero-trust-web.pattern.json</text>
+                  <line x1="20" y1="46" x2="300" y2="46" class="stroke-soft" stroke-width="0.5"/>
+                  <text x="20" y="78" class="mono">{</text>
+                  <text x="36" y="98" class="mono">"name": "Zero-Trust Web",</text>
+                  <text x="36" y="118" class="mono">"required-controls": [</text>
+                  <text x="52" y="138" class="mono accent">  "mtls-everywhere",</text>
+                  <text x="52" y="158" class="mono accent">  "spiffe-identity",</text>
+                  <text x="52" y="178" class="mono accent">  "policy-enforcement"</text>
+                  <text x="36" y="198" class="mono">],</text>
+                  <text x="36" y="218" class="mono">"node-placeholders": [...]</text>
+                  <text x="20" y="238" class="mono">}</text>
+                </g>
+
+                <!-- arrow -->
+                <g transform="translate(440,160)">
+                  <line x1="-30" y1="0" x2="50" y2="0" class="stroke" stroke-width="1.2"/>
+                  <polyline points="40,-6 50,0 40,6" fill="none" class="stroke" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <text x="10" y="-14" class="mono accent" text-anchor="middle">instantiates</text>
+                </g>
+
+                <!-- Architecture (right) -->
+                <g transform="translate(500,40)">
+                  <rect x="0" y="0" width="320" height="240" class="fill-accent-soft stroke-accent" stroke-width="1.5" rx="2"/>
+                  <text x="20" y="32" class="mono accent">ARCHITECTURE · payments.calm.json</text>
+                  <line x1="20" y1="46" x2="300" y2="46" class="stroke-accent" stroke-width="0.5"/>
+                  <text x="20" y="78" class="mono">{</text>
+                  <text x="36" y="98" class="mono">"pattern": "zero-trust-web",</text>
+                  <text x="36" y="118" class="mono">"nodes": [</text>
+                  <text x="52" y="138" class="mono">  {"id": "payments-api"},</text>
+                  <text x="52" y="158" class="mono">  {"id": "ledger-db"},</text>
+                  <text x="52" y="178" class="mono">  {"id": "auth-idp"}</text>
+                  <text x="36" y="198" class="mono">],</text>
+                  <text x="36" y="218" class="mono">"controls": [...]</text>
+                  <text x="20" y="238" class="mono">}</text>
+                </g>
+              </svg>
+              <figcaption class="diagram-caption"><strong>Fig 2.2</strong> — Pattern as template; Architecture as instance. The CLI validates the right against the left.</figcaption>
+            </figure>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">2.4</span>
+              <h3>How CALM relates to C4, TOGAF, and IaC</h3>
+            </header>
+            <div class="section-body">
+              <p>Treat CALM as the source of truth, and treat the others as either views into it or downstream consumers of it:</p>
+              <ul class="stack-tight" style="margin-top: var(--space-3);">
+                <li>· <strong>C4</strong> — render Context, Container and Component diagrams from the CALM document. The CALM document is the spec; the C4 diagrams are the documentation.</li>
+                <li>· <strong>TOGAF</strong> — TOGAF tells you <em>how to do enterprise architecture</em>; it does not give you a file format. CALM is the file format your TOGAF process produces.</li>
+                <li>· <strong>Terraform / Crossplane</strong> — these realise the architecture. A CALM document can pin which provider modules are acceptable; a Terraform module can be tagged with the CALM node it implements.</li>
+                <li>· <strong>OPA / Kyverno / policy-as-code</strong> — controls in CALM reference the policies that enforce them at runtime, closing the loop between design-time intent and runtime enforcement.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">2.5</span>
+              <h3>Comparison at a glance</h3>
+            </header>
+            <div class="section-body">
+              <p>The table below positions CALM against the artefacts you most often encounter on a regulated platform.</p>
+            </div>
+
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th scope="col">Property</th>
+                    <th scope="col">CALM</th>
+                    <th scope="col">C4 Model</th>
+                    <th scope="col">ArchiMate</th>
+                    <th scope="col">Plain Mermaid</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row">Format</th>
+                    <td class="table-mono">JSON / JSON Schema</td>
+                    <td>DSL or diagram</td>
+                    <td>XML (Open Group)</td>
+                    <td>Plain text</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Machine validation</th>
+                    <td><span class="check">●</span> First-class</td>
+                    <td><span class="cross">○</span> No</td>
+                    <td><span class="partial">◐</span> Vendor tools</td>
+                    <td><span class="cross">○</span> No</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Reusable patterns</th>
+                    <td><span class="check">●</span> First-class</td>
+                    <td><span class="cross">○</span> Convention only</td>
+                    <td><span class="check">●</span> Yes</td>
+                    <td><span class="cross">○</span> No</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Embedded controls</th>
+                    <td><span class="check">●</span> Native</td>
+                    <td><span class="cross">○</span> Out-of-band</td>
+                    <td><span class="partial">◐</span> Limited</td>
+                    <td><span class="cross">○</span> No</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Open standard</th>
+                    <td><span class="check">●</span> FINOS/LF</td>
+                    <td><span class="check">●</span> Simon Brown</td>
+                    <td><span class="check">●</span> Open Group</td>
+                    <td><span class="check">●</span> MIT</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Best for</th>
+                    <td>Regulated, auditable architectures</td>
+                    <td>Communicating with humans</td>
+                    <td>Enterprise EA modelling</td>
+                    <td>Quick sketches</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Diff in pull request</th>
+                    <td><span class="check">●</span> Trivial (JSON)</td>
+                    <td><span class="partial">◐</span> If DSL</td>
+                    <td><span class="cross">○</span> Painful</td>
+                    <td><span class="check">●</span> Trivial</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Renders to diagrams</th>
+                    <td><span class="check">●</span> via CLI</td>
+                    <td><span class="check">●</span> Native</td>
+                    <td><span class="check">●</span> Vendor tools</td>
+                    <td><span class="check">●</span> Native</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="callout reveal" role="region" aria-label="Module 2 key takeaways">
+            <header class="callout-header">
+              <span class="label">Key Takeaways · Module 02</span>
+            </header>
+            <div class="callout-body">
+              <ul>
+                <li>CALM has six primitives: <strong>Nodes, Relationships, Interfaces, Controls, Flows, Metadata.</strong></li>
+                <li>The format is <strong>JSON validated by JSON Schema</strong> — every document declares a <span class="ic">$schema</span>.</li>
+                <li>The crucial conceptual move is <strong>Pattern (template) vs Architecture (instance)</strong>; a pattern is to an architecture what a JSON Schema is to a JSON document.</li>
+                <li>CALM does not replace C4 or Terraform; it sits <em>upstream</em> of them as the source of truth, and <em>renders into</em> them as views.</li>
+                <li>Compared to ArchiMate, CALM is friendlier to engineers and to Git diffs; compared to plain Mermaid, it is enforceable.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout callout-checkpoint reveal" role="region" aria-label="Module 2 checkpoint questions">
+            <header class="callout-header">
+              <span class="label">Checkpoint · Module 02</span>
+            </header>
+            <div class="callout-body">
+              <ol>
+                <li>Which of the six primitives would you use to model the requirement &ldquo;every external HTTP relationship in the payments domain must terminate at a WAF&rdquo;? Explain why.</li>
+                <li>Suppose your group already maintains a golden reference architecture for customer-facing web apps. Sketch in one paragraph how you would express it as a CALM <em>Pattern</em> versus what would belong in each team&apos;s <em>Architecture</em>.</li>
+              </ol>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ==========================================================
+         MODULE 03 — ANATOMY OF A CALM DOCUMENT
+         ========================================================== -->
+    <section class="module" id="m3">
+      <div class="container">
+
+        <header class="module-header reveal">
+          <div class="module-number">
+            <span class="label">Module</span>
+            <span class="num">03</span>
+            <span class="label">Anatomy of a CALM Document</span>
+          </div>
+          <div class="module-title">
+            <h2>From the smallest valid file to a real three-tier system.</h2>
+            <p class="lead">In this module we evolve a CALM document from the bare minimum into a realistic, validating, render-ready architecture for a customer-facing web application — load balancer, web tier, API tier, database, and external identity provider.</p>
+          </div>
+        </header>
+
+        <div class="container-text">
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">3.1</span>
+              <h3>The minimal valid CALM document</h3>
+            </header>
+            <div class="section-body">
+              <p>The smallest document the CLI will accept needs four things: a schema reference, an identity for the document itself, and the two collections that everything else hangs off — <span class="ic">nodes</span> and <span class="ic">relationships</span>. Both may be empty.</p>
+            </div>
+
+            <div class="specimen">
+              <header class="specimen-header">
+                <span class="filename">hello-world.arch.json</span>
+                <span class="lang">CALM · JSON</span>
+              </header>
+<pre><code><span class="tok-pun">{</span>
+  <span class="tok-key">"$schema"</span><span class="tok-pun">:</span> <span class="tok-str">"https://calm.finos.org/release/1.0/meta/calm.json"</span><span class="tok-pun">,</span>
+  <span class="tok-key">"name"</span><span class="tok-pun">:</span> <span class="tok-str">"Hello World"</span><span class="tok-pun">,</span>
+  <span class="tok-key">"description"</span><span class="tok-pun">:</span> <span class="tok-str">"The smallest CALM document that validates."</span><span class="tok-pun">,</span>
+  <span class="tok-key">"nodes"</span><span class="tok-pun">:</span> <span class="tok-pun">[],</span>
+  <span class="tok-key">"relationships"</span><span class="tok-pun">:</span> <span class="tok-pun">[]</span>
+<span class="tok-pun">}</span></code></pre>
+            </div>
+
+            <p style="margin-top: var(--space-4);">Run <span class="ic">calm validate -a hello-world.arch.json</span> against this and you will see <strong>0 errors</strong>. It is empty, but it is valid.</p>
+            <div class="callout callout-note">
+              <header class="callout-header"><span class="label">Note · schema URL</span></header>
+              <div class="callout-body">
+                <p style="font-size: 14px;">Schema URLs evolve between CALM releases. Always reference the URL printed by the CLI for your installed version (<span class="ic">calm --version</span>) rather than copying one from a tutorial. The path shown above is illustrative; verify against the FINOS repository.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">3.2</span>
+              <h3>Adding nodes and relationships</h3>
+            </header>
+            <div class="section-body">
+              <p>We now describe a real system: a customer-facing web application with a public load balancer, a web tier, an API tier, a database, and a federated identity provider. Each node has a <strong>unique id</strong>, a <strong>type</strong>, and a human-readable <strong>name</strong>. Relationships reference nodes by id and declare what kind of edge they are.</p>
+            </div>
+
+            <div class="specimen">
+              <header class="specimen-header">
+                <span class="filename">webapp.arch.json — nodes &amp; relationships</span>
+                <span class="lang">CALM · JSON</span>
+              </header>
+<pre><code><span class="tok-pun">{</span>
+  <span class="tok-key">"$schema"</span><span class="tok-pun">:</span> <span class="tok-str">"https://calm.finos.org/release/1.0/meta/calm.json"</span><span class="tok-pun">,</span>
+  <span class="tok-key">"name"</span><span class="tok-pun">:</span> <span class="tok-str">"Customer Web App"</span><span class="tok-pun">,</span>
+  <span class="tok-key">"description"</span><span class="tok-pun">:</span> <span class="tok-str">"Public-facing 3-tier web application."</span><span class="tok-pun">,</span>
+  <span class="tok-key">"nodes"</span><span class="tok-pun">:</span> <span class="tok-pun">[</span>
+    <span class="tok-pun">{</span> <span class="tok-key">"unique-id"</span><span class="tok-pun">:</span> <span class="tok-str">"customer"</span><span class="tok-pun">,</span> <span class="tok-key">"node-type"</span><span class="tok-pun">:</span> <span class="tok-str">"actor"</span><span class="tok-pun">,</span>    <span class="tok-key">"name"</span><span class="tok-pun">:</span> <span class="tok-str">"Customer"</span> <span class="tok-pun">},</span>
+    <span class="tok-pun">{</span> <span class="tok-key">"unique-id"</span><span class="tok-pun">:</span> <span class="tok-str">"alb"</span><span class="tok-pun">,</span>      <span class="tok-key">"node-type"</span><span class="tok-pun">:</span> <span class="tok-str">"network"</span><span class="tok-pun">,</span>  <span class="tok-key">"name"</span><span class="tok-pun">:</span> <span class="tok-str">"Application LB"</span> <span class="tok-pun">},</span>
+    <span class="tok-pun">{</span> <span class="tok-key">"unique-id"</span><span class="tok-pun">:</span> <span class="tok-str">"web"</span><span class="tok-pun">,</span>      <span class="tok-key">"node-type"</span><span class="tok-pun">:</span> <span class="tok-str">"service"</span><span class="tok-pun">,</span>  <span class="tok-key">"name"</span><span class="tok-pun">:</span> <span class="tok-str">"Web Tier (SSR)"</span> <span class="tok-pun">},</span>
+    <span class="tok-pun">{</span> <span class="tok-key">"unique-id"</span><span class="tok-pun">:</span> <span class="tok-str">"api"</span><span class="tok-pun">,</span>      <span class="tok-key">"node-type"</span><span class="tok-pun">:</span> <span class="tok-str">"service"</span><span class="tok-pun">,</span>  <span class="tok-key">"name"</span><span class="tok-pun">:</span> <span class="tok-str">"API Tier"</span> <span class="tok-pun">},</span>
+    <span class="tok-pun">{</span> <span class="tok-key">"unique-id"</span><span class="tok-pun">:</span> <span class="tok-str">"db"</span><span class="tok-pun">,</span>       <span class="tok-key">"node-type"</span><span class="tok-pun">:</span> <span class="tok-str">"database"</span><span class="tok-pun">,</span> <span class="tok-key">"name"</span><span class="tok-pun">:</span> <span class="tok-str">"PostgreSQL"</span> <span class="tok-pun">},</span>
+    <span class="tok-pun">{</span> <span class="tok-key">"unique-id"</span><span class="tok-pun">:</span> <span class="tok-str">"idp"</span><span class="tok-pun">,</span>      <span class="tok-key">"node-type"</span><span class="tok-pun">:</span> <span class="tok-str">"system"</span><span class="tok-pun">,</span>   <span class="tok-key">"name"</span><span class="tok-pun">:</span> <span class="tok-str">"OIDC Provider"</span> <span class="tok-pun">}</span>
+  <span class="tok-pun">],</span>
+  <span class="tok-key">"relationships"</span><span class="tok-pun">:</span> <span class="tok-pun">[</span>
+    <span class="tok-pun">{</span>
+      <span class="tok-key">"unique-id"</span><span class="tok-pun">:</span> <span class="tok-str">"customer-to-alb"</span><span class="tok-pun">,</span>
+      <span class="tok-key">"relationship-type"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"connects"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"source"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"node"</span><span class="tok-pun">:</span> <span class="tok-str">"customer"</span> <span class="tok-pun">},</span>
+                                          <span class="tok-key">"destination"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"node"</span><span class="tok-pun">:</span> <span class="tok-str">"alb"</span> <span class="tok-pun">}</span> <span class="tok-pun">}</span> <span class="tok-pun">},</span>
+      <span class="tok-key">"protocol"</span><span class="tok-pun">:</span> <span class="tok-str">"HTTPS"</span>
+    <span class="tok-pun">},</span>
+    <span class="tok-pun">{</span> <span class="tok-key">"unique-id"</span><span class="tok-pun">:</span> <span class="tok-str">"alb-to-web"</span><span class="tok-pun">,</span>
+      <span class="tok-key">"relationship-type"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"connects"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"source"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"node"</span><span class="tok-pun">:</span> <span class="tok-str">"alb"</span> <span class="tok-pun">},</span>
+                                          <span class="tok-key">"destination"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"node"</span><span class="tok-pun">:</span> <span class="tok-str">"web"</span> <span class="tok-pun">}</span> <span class="tok-pun">}</span> <span class="tok-pun">},</span>
+      <span class="tok-key">"protocol"</span><span class="tok-pun">:</span> <span class="tok-str">"HTTPS"</span> <span class="tok-pun">},</span>
+    <span class="tok-pun">{</span> <span class="tok-key">"unique-id"</span><span class="tok-pun">:</span> <span class="tok-str">"web-to-api"</span><span class="tok-pun">,</span>
+      <span class="tok-key">"relationship-type"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"connects"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"source"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"node"</span><span class="tok-pun">:</span> <span class="tok-str">"web"</span> <span class="tok-pun">},</span>
+                                          <span class="tok-key">"destination"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"node"</span><span class="tok-pun">:</span> <span class="tok-str">"api"</span> <span class="tok-pun">}</span> <span class="tok-pun">}</span> <span class="tok-pun">},</span>
+      <span class="tok-key">"protocol"</span><span class="tok-pun">:</span> <span class="tok-str">"HTTPS / mTLS"</span> <span class="tok-pun">},</span>
+    <span class="tok-pun">{</span> <span class="tok-key">"unique-id"</span><span class="tok-pun">:</span> <span class="tok-str">"api-to-db"</span><span class="tok-pun">,</span>
+      <span class="tok-key">"relationship-type"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"connects"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"source"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"node"</span><span class="tok-pun">:</span> <span class="tok-str">"api"</span> <span class="tok-pun">},</span>
+                                          <span class="tok-key">"destination"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"node"</span><span class="tok-pun">:</span> <span class="tok-str">"db"</span> <span class="tok-pun">}</span> <span class="tok-pun">}</span> <span class="tok-pun">},</span>
+      <span class="tok-key">"protocol"</span><span class="tok-pun">:</span> <span class="tok-str">"PostgreSQL/TLS"</span> <span class="tok-pun">},</span>
+    <span class="tok-pun">{</span> <span class="tok-key">"unique-id"</span><span class="tok-pun">:</span> <span class="tok-str">"web-to-idp"</span><span class="tok-pun">,</span>
+      <span class="tok-key">"relationship-type"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"connects"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"source"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"node"</span><span class="tok-pun">:</span> <span class="tok-str">"web"</span> <span class="tok-pun">},</span>
+                                          <span class="tok-key">"destination"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"node"</span><span class="tok-pun">:</span> <span class="tok-str">"idp"</span> <span class="tok-pun">}</span> <span class="tok-pun">}</span> <span class="tok-pun">},</span>
+      <span class="tok-key">"protocol"</span><span class="tok-pun">:</span> <span class="tok-str">"OIDC / HTTPS"</span> <span class="tok-pun">}</span>
+  <span class="tok-pun">]</span>
+<span class="tok-pun">}</span></code></pre>
+            </div>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">3.3</span>
+              <h3>Rendered as a diagram</h3>
+            </header>
+            <div class="section-body">
+              <p>Below is the same architecture, rendered. Note the trust boundary around the internal services and the dashed line to the external identity provider.</p>
+            </div>
+
+            <figure class="diagram" role="img" aria-label="Three-tier web application diagram. A customer connects through the public internet to an application load balancer, which routes to a web tier, which calls an API tier, which talks to a PostgreSQL database. The web tier also delegates authentication to an external OIDC provider.">
+              <svg viewBox="0 0 880 420" preserveAspectRatio="xMidYMid meet">
+
+                <!-- trust boundary -->
+                <rect x="220" y="60" width="540" height="320" class="fill-surface-alt" stroke-dasharray="4 4" stroke="currentColor" stroke-width="0.8" rx="2"/>
+                <text x="232" y="78" class="mono muted">TRUST BOUNDARY · Internal VPC · PCI-DSS scope</text>
+
+                <!-- customer -->
+                <g transform="translate(60,200)">
+                  <rect x="-50" y="-32" width="100" height="64" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-6" class="title" text-anchor="middle">Customer</text>
+                  <text x="0" y="14" class="mono muted" text-anchor="middle">actor</text>
+                </g>
+
+                <!-- ALB -->
+                <g transform="translate(280,200)">
+                  <rect x="-60" y="-32" width="120" height="64" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-6" class="title" text-anchor="middle">App LB</text>
+                  <text x="0" y="14" class="mono muted" text-anchor="middle">network</text>
+                </g>
+
+                <!-- Web -->
+                <g transform="translate(460,140)">
+                  <rect x="-60" y="-32" width="120" height="64" class="fill-accent-soft stroke-accent" stroke-width="1.4" rx="2"/>
+                  <text x="0" y="-6" class="title accent" text-anchor="middle">Web Tier</text>
+                  <text x="0" y="14" class="mono accent" text-anchor="middle">service · SSR</text>
+                </g>
+
+                <!-- API -->
+                <g transform="translate(620,200)">
+                  <rect x="-60" y="-32" width="120" height="64" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-6" class="title" text-anchor="middle">API Tier</text>
+                  <text x="0" y="14" class="mono muted" text-anchor="middle">service</text>
+                </g>
+
+                <!-- DB -->
+                <g transform="translate(620,340)">
+                  <rect x="-60" y="-26" width="120" height="52" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-2" class="title" text-anchor="middle">PostgreSQL</text>
+                  <text x="0" y="14" class="mono muted" text-anchor="middle">database</text>
+                </g>
+
+                <!-- IDP (external) -->
+                <g transform="translate(820,140)">
+                  <rect x="-50" y="-32" width="100" height="64" class="fill-bg stroke" stroke-width="1" stroke-dasharray="3 3" rx="2"/>
+                  <text x="0" y="-6" class="title" text-anchor="middle">OIDC IdP</text>
+                  <text x="0" y="14" class="mono muted" text-anchor="middle">external</text>
+                </g>
+
+                <!-- arrows -->
+                <!-- customer → alb -->
+                <line x1="110" y1="200" x2="220" y2="200" class="stroke" stroke-width="1.2"/>
+                <polyline points="212,194 220,200 212,206" fill="none" class="stroke" stroke-width="1.2"/>
+                <text x="165" y="190" class="mono" text-anchor="middle">HTTPS</text>
+
+                <!-- alb → web -->
+                <line x1="340" y1="186" x2="400" y2="146" class="stroke-accent" stroke-width="1.4"/>
+                <polyline points="397,140 405,143 401,150" fill="none" class="stroke-accent" stroke-width="1.4"/>
+                <text x="365" y="160" class="mono accent">HTTPS</text>
+
+                <!-- web → api -->
+                <line x1="520" y1="155" x2="560" y2="190" class="stroke-accent" stroke-width="1.4"/>
+                <polyline points="557,184 565,188 559,194" fill="none" class="stroke-accent" stroke-width="1.4"/>
+                <text x="555" y="160" class="mono accent">mTLS</text>
+
+                <!-- api → db -->
+                <line x1="620" y1="232" x2="620" y2="314" class="stroke" stroke-width="1.2"/>
+                <polyline points="614,306 620,316 626,306" fill="none" class="stroke" stroke-width="1.2"/>
+                <text x="630" y="278" class="mono">TLS</text>
+
+                <!-- web → idp (dashed external) -->
+                <line x1="520" y1="140" x2="770" y2="140" class="stroke" stroke-width="1.2" stroke-dasharray="4 3"/>
+                <polyline points="762,134 770,140 762,146" fill="none" class="stroke" stroke-width="1.2"/>
+                <text x="650" y="128" class="mono" text-anchor="middle">OIDC / HTTPS</text>
+
+              </svg>
+              <figcaption class="diagram-caption"><strong>Fig 3.1</strong> — The three-tier architecture rendered from the JSON above. Dashed lines indicate external trust boundaries.</figcaption>
+            </figure>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">3.4</span>
+              <h3>Adding interfaces, controls and a flow</h3>
+            </header>
+            <div class="section-body">
+              <p>Now we layer the remaining primitives. Interfaces give relationships somewhere to attach. Controls express a policy requirement. Flows describe the customer sign-in journey end-to-end.</p>
+            </div>
+
+            <div class="specimen">
+              <header class="specimen-header">
+                <span class="filename">webapp.arch.json — interfaces, controls, flows</span>
+                <span class="lang">CALM · JSON (excerpt)</span>
+              </header>
+<pre><code><span class="tok-key">"interfaces"</span><span class="tok-pun">:</span> <span class="tok-pun">[</span>
+  <span class="tok-pun">{</span> <span class="tok-key">"unique-id"</span><span class="tok-pun">:</span> <span class="tok-str">"alb-https"</span><span class="tok-pun">,</span> <span class="tok-key">"node"</span><span class="tok-pun">:</span> <span class="tok-str">"alb"</span><span class="tok-pun">,</span>
+    <span class="tok-key">"interface-type"</span><span class="tok-pun">:</span> <span class="tok-str">"https"</span><span class="tok-pun">,</span> <span class="tok-key">"port"</span><span class="tok-pun">:</span> <span class="tok-num">443</span> <span class="tok-pun">},</span>
+  <span class="tok-pun">{</span> <span class="tok-key">"unique-id"</span><span class="tok-pun">:</span> <span class="tok-str">"api-grpc"</span><span class="tok-pun">,</span> <span class="tok-key">"node"</span><span class="tok-pun">:</span> <span class="tok-str">"api"</span><span class="tok-pun">,</span>
+    <span class="tok-key">"interface-type"</span><span class="tok-pun">:</span> <span class="tok-str">"grpc"</span><span class="tok-pun">,</span> <span class="tok-key">"port"</span><span class="tok-pun">:</span> <span class="tok-num">8443</span> <span class="tok-pun">}</span>
+<span class="tok-pun">],</span>
+<span class="tok-key">"controls"</span><span class="tok-pun">:</span> <span class="tok-pun">[</span>
+  <span class="tok-pun">{</span> <span class="tok-key">"unique-id"</span><span class="tok-pun">:</span> <span class="tok-str">"mtls-internal"</span><span class="tok-pun">,</span>
+    <span class="tok-key">"description"</span><span class="tok-pun">:</span> <span class="tok-str">"All east-west calls must use mTLS with SPIFFE SVIDs."</span><span class="tok-pun">,</span>
+    <span class="tok-key">"requirement-url"</span><span class="tok-pun">:</span> <span class="tok-str">"https://nvlpubs.nist.gov/SP800-207"</span><span class="tok-pun">,</span>
+    <span class="tok-key">"applies-to"</span><span class="tok-pun">:</span> <span class="tok-pun">[</span> <span class="tok-str">"web-to-api"</span><span class="tok-pun">,</span> <span class="tok-str">"api-to-db"</span> <span class="tok-pun">]</span> <span class="tok-pun">}</span>
+<span class="tok-pun">],</span>
+<span class="tok-key">"flows"</span><span class="tok-pun">:</span> <span class="tok-pun">[</span>
+  <span class="tok-pun">{</span> <span class="tok-key">"unique-id"</span><span class="tok-pun">:</span> <span class="tok-str">"customer-sign-in"</span><span class="tok-pun">,</span>
+    <span class="tok-key">"description"</span><span class="tok-pun">:</span> <span class="tok-str">"OIDC sign-in for an authenticated session."</span><span class="tok-pun">,</span>
+    <span class="tok-key">"transitions"</span><span class="tok-pun">:</span> <span class="tok-pun">[</span>
+      <span class="tok-pun">{</span> <span class="tok-key">"sequence"</span><span class="tok-pun">:</span> <span class="tok-num">1</span><span class="tok-pun">,</span> <span class="tok-key">"relationship"</span><span class="tok-pun">:</span> <span class="tok-str">"customer-to-alb"</span> <span class="tok-pun">},</span>
+      <span class="tok-pun">{</span> <span class="tok-key">"sequence"</span><span class="tok-pun">:</span> <span class="tok-num">2</span><span class="tok-pun">,</span> <span class="tok-key">"relationship"</span><span class="tok-pun">:</span> <span class="tok-str">"alb-to-web"</span> <span class="tok-pun">},</span>
+      <span class="tok-pun">{</span> <span class="tok-key">"sequence"</span><span class="tok-pun">:</span> <span class="tok-num">3</span><span class="tok-pun">,</span> <span class="tok-key">"relationship"</span><span class="tok-pun">:</span> <span class="tok-str">"web-to-idp"</span> <span class="tok-pun">},</span>
+      <span class="tok-pun">{</span> <span class="tok-key">"sequence"</span><span class="tok-pun">:</span> <span class="tok-num">4</span><span class="tok-pun">,</span> <span class="tok-key">"relationship"</span><span class="tok-pun">:</span> <span class="tok-str">"web-to-api"</span> <span class="tok-pun">}</span>
+    <span class="tok-pun">]</span> <span class="tok-pun">}</span>
+<span class="tok-pun">]</span></code></pre>
+            </div>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">3.5</span>
+              <h3>Validation in practice</h3>
+            </header>
+            <div class="section-body">
+              <p>The CLI validates an architecture against the base CALM schema and, optionally, against a Pattern. Failures are structured (exit code, file/line) and slot directly into a CI job.</p>
+            </div>
+
+            <div class="specimen">
+              <header class="specimen-header">
+                <span class="filename">~/repo $ calm validate -a webapp.arch.json</span>
+                <span class="lang">SHELL</span>
+              </header>
+<pre><code><span class="tok-cmt">// success</span>
+<span class="tok-pun">→</span> Loaded <span class="tok-str">webapp.arch.json</span>
+<span class="tok-pun">→</span> Validating against <span class="tok-str">https://calm.finos.org/release/1.0/meta/calm.json</span>
+<span class="tok-pun">→</span> 6 nodes · 5 relationships · 2 interfaces · 1 control · 1 flow
+<span class="tok-pun">→</span> <span class="tok-key">PASS</span> · 0 errors · 0 warnings
+
+<span class="tok-cmt">// failure example — referencing a non-existent node</span>
+<span class="tok-pun">→</span> ERROR  /relationships/3/relationship-type/connects/destination/node
+   value <span class="tok-str">"db-replica"</span> does not match any node unique-id.
+<span class="tok-pun">→</span> <span class="tok-key">FAIL</span> · 1 error</code></pre>
+            </div>
+          </div>
+
+          <div class="callout reveal" role="region" aria-label="Module 3 key takeaways">
+            <header class="callout-header">
+              <span class="label">Key Takeaways · Module 03</span>
+            </header>
+            <div class="callout-body">
+              <ul>
+                <li>A valid CALM file needs only a <span class="ic">$schema</span>, a <span class="ic">name</span>, and (possibly empty) <span class="ic">nodes</span> and <span class="ic">relationships</span> arrays.</li>
+                <li>Nodes have a <strong>unique-id</strong>, a <strong>node-type</strong>, and a <strong>name</strong>; relationships are typed and refer to nodes by id.</li>
+                <li>Interfaces, controls, flows and metadata are <strong>additive</strong> — you can grow a document gradually without breaking validation.</li>
+                <li>The CLI validates against the base schema and against any referenced <strong>Pattern</strong>, exiting non-zero on failure for clean CI integration.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout callout-checkpoint reveal" role="region" aria-label="Module 3 checkpoint questions">
+            <header class="callout-header">
+              <span class="label">Checkpoint · Module 03</span>
+            </header>
+            <div class="callout-body">
+              <ol>
+                <li>Look back at the diagram in Fig 3.1. Where would you add a node, an interface and a control to model a Web Application Firewall sitting in front of the load balancer?</li>
+                <li>The flow <span class="ic">customer-sign-in</span> traverses four relationships. How would you express the requirement that all four must, individually, satisfy the <span class="ic">mtls-internal</span> control?</li>
+              </ol>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ==========================================================
+         MODULE 04 — PATTERNS, CONTROLS, GOVERNANCE
+         ========================================================== -->
+    <section class="module" id="m4">
+      <div class="container">
+
+        <header class="module-header reveal">
+          <div class="module-number">
+            <span class="label">Module</span>
+            <span class="num">04</span>
+            <span class="label">Patterns, Controls, Governance</span>
+          </div>
+          <div class="module-title">
+            <h2>Where CALM stops being a diagram tool and becomes a control plane.</h2>
+            <p class="lead">For regulated industries the interesting question is not &ldquo;can I draw my system?&rdquo;, it is &ldquo;can I prove that my system meets a recognised control framework, every time it changes?&rdquo;. This module shows how Patterns and Controls answer that question.</p>
+          </div>
+        </header>
+
+        <div class="container-text">
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">4.1</span>
+              <h3>Patterns as opinionated reference architectures</h3>
+            </header>
+            <div class="section-body">
+              <p>A <strong>Pattern</strong> is a reusable, opinionated CALM document. It captures the architectural decisions a regulated firm has already made — the ones that should not be re-litigated on every project — and exposes the deliberately-variable bits as placeholders.</p>
+              <p>Typical things a Pattern locks down:</p>
+              <ul class="stack-tight" style="margin-top: var(--space-3);">
+                <li>· <strong>Required node types</strong> — every customer-facing pattern <em>must</em> include a WAF and an IdP.</li>
+                <li>· <strong>Required controls</strong> — mTLS on east-west, TLS 1.2+ on north-south, key rotation under 90 days.</li>
+                <li>· <strong>Forbidden topologies</strong> — no direct internet exposure of databases, no shared service accounts.</li>
+                <li>· <strong>Mandatory metadata</strong> — every node must declare <span class="ic">owner</span>, <span class="ic">data-classification</span>, <span class="ic">regulatory-scope</span>.</li>
+              </ul>
+              <p>An architect implementing the pattern is free to choose specific service implementations (Postgres or Aurora? Envoy or Istio?) but cannot opt out of the controls.</p>
+            </div>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">4.2</span>
+              <h3>Controls as first-class citizens</h3>
+            </header>
+            <div class="section-body">
+              <p>A <strong>Control</strong> in CALM is a structured object: a description, a reference to an external requirement (e.g. a NIST Special Publication, a PCI-DSS sub-requirement, an internal control standard), and a list of nodes or relationships it applies to. Controls travel with the architecture and are evaluated by the validator.</p>
+              <p>The structural pattern is consistent: <em>requirement-document → control-detail → applies-to</em>.</p>
+            </div>
+
+            <div class="specimen">
+              <header class="specimen-header">
+                <span class="filename">controls fragment — illustrative</span>
+                <span class="lang">CALM · JSON</span>
+              </header>
+<pre><code><span class="tok-key">"controls"</span><span class="tok-pun">:</span> <span class="tok-pun">[</span>
+  <span class="tok-pun">{</span>
+    <span class="tok-key">"unique-id"</span><span class="tok-pun">:</span> <span class="tok-str">"zt-explicit-trust"</span><span class="tok-pun">,</span>
+    <span class="tok-key">"description"</span><span class="tok-pun">:</span> <span class="tok-str">"All access decisions must be made on a per-request basis."</span><span class="tok-pun">,</span>
+    <span class="tok-key">"requirement"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span>
+      <span class="tok-key">"framework"</span><span class="tok-pun">:</span> <span class="tok-str">"NIST SP 800-207"</span><span class="tok-pun">,</span>
+      <span class="tok-key">"requirement-id"</span><span class="tok-pun">:</span> <span class="tok-str">"3.1"</span><span class="tok-pun">,</span>
+      <span class="tok-key">"requirement-url"</span><span class="tok-pun">:</span> <span class="tok-str">"https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-207.pdf"</span>
+    <span class="tok-pun">},</span>
+    <span class="tok-key">"control-detail"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span>
+      <span class="tok-key">"implementation"</span><span class="tok-pun">:</span> <span class="tok-str">"OPA-Envoy ext-authz at every PEP"</span><span class="tok-pun">,</span>
+      <span class="tok-key">"evidence-url"</span><span class="tok-pun">:</span> <span class="tok-str">"git://platform/policies/zt-explicit"</span>
+    <span class="tok-pun">},</span>
+    <span class="tok-key">"applies-to"</span><span class="tok-pun">:</span> <span class="tok-pun">[</span> <span class="tok-str">"web-to-api"</span><span class="tok-pun">,</span> <span class="tok-str">"api-to-db"</span> <span class="tok-pun">]</span>
+  <span class="tok-pun">},</span>
+  <span class="tok-pun">{</span>
+    <span class="tok-key">"unique-id"</span><span class="tok-pun">:</span> <span class="tok-str">"zt-workload-identity"</span><span class="tok-pun">,</span>
+    <span class="tok-key">"description"</span><span class="tok-pun">:</span> <span class="tok-str">"Every workload must present a SPIFFE SVID, not a long-lived secret."</span><span class="tok-pun">,</span>
+    <span class="tok-key">"requirement"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"framework"</span><span class="tok-pun">:</span> <span class="tok-str">"NIST SP 800-207"</span><span class="tok-pun">,</span> <span class="tok-key">"requirement-id"</span><span class="tok-pun">:</span> <span class="tok-str">"3.4"</span> <span class="tok-pun">},</span>
+    <span class="tok-key">"control-detail"</span><span class="tok-pun">:</span> <span class="tok-pun">{</span> <span class="tok-key">"implementation"</span><span class="tok-pun">:</span> <span class="tok-str">"SPIRE-issued SVIDs, 1-hour TTL"</span> <span class="tok-pun">},</span>
+    <span class="tok-key">"applies-to"</span><span class="tok-pun">:</span> <span class="tok-pun">[</span> <span class="tok-str">"web"</span><span class="tok-pun">,</span> <span class="tok-str">"api"</span> <span class="tok-pun">]</span>
+  <span class="tok-pun">}</span>
+<span class="tok-pun">]</span></code></pre>
+            </div>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">4.3</span>
+              <h3>Drift, conformance, and ADR generation</h3>
+            </header>
+            <div class="section-body">
+              <p>Once your architecture is in CALM, three governance behaviours become straightforward:</p>
+              <ul class="stack-tight" style="margin-top: var(--space-3);">
+                <li>· <strong>Conformance</strong> — every pull request runs the validator. If the change violates the Pattern (e.g. removes a required control), CI blocks the merge.</li>
+                <li>· <strong>Drift detection</strong> — periodic jobs compare the deployed state (read from cloud APIs / Kubernetes / service mesh) against the CALM document. Drift opens a ticket; the source of truth never silently changes.</li>
+                <li>· <strong>ADR generation</strong> — material changes to the CALM document trigger an Architecture Decision Record in <span class="ic">docs/adr/</span>, automatically pre-populated with the diff, the affected controls, and the affected pattern.</li>
+              </ul>
+              <p>The result is that architectural change in a regulated environment becomes <em>auditable by construction</em>, not by retrospective evidence-gathering.</p>
+            </div>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">4.4</span>
+              <h3>Worked example — a Zero Trust pattern</h3>
+            </header>
+            <div class="section-body">
+              <p>Below is a sketch of a Zero Trust web application pattern, with controls mapped to <strong>NIST SP 800-207</strong>. In the rendered diagram each control is shown as a small badge attached to the relationship it applies to.</p>
+            </div>
+
+            <figure class="diagram" role="img" aria-label="Zero Trust web application pattern. The same three-tier architecture as before, with control badges attached to the load balancer (perimeter TLS), web-to-API edge (mTLS plus PEP), API-to-database edge (mTLS plus authorization), and to the web tier itself (workload identity).">
+              <svg viewBox="0 0 880 460" preserveAspectRatio="xMidYMid meet">
+
+                <!-- title strip -->
+                <text x="40" y="30" class="mono accent">PATTERN · zero-trust-web</text>
+                <text x="40" y="46" class="mono muted">aligned to NIST SP 800-207</text>
+                <line x1="40" y1="56" x2="840" y2="56" class="stroke-soft" stroke-width="0.6"/>
+
+                <!-- trust boundary -->
+                <rect x="220" y="100" width="540" height="320" class="fill-surface-alt" stroke-dasharray="4 4" stroke="currentColor" stroke-width="0.8" rx="2"/>
+                <text x="232" y="120" class="mono muted">IMPLICIT-DENY ZONE · workload identity required</text>
+
+                <!-- customer -->
+                <g transform="translate(60,240)">
+                  <rect x="-50" y="-32" width="100" height="64" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-6" class="title" text-anchor="middle">Customer</text>
+                  <text x="0" y="14" class="mono muted" text-anchor="middle">untrusted</text>
+                </g>
+
+                <!-- ALB / WAF -->
+                <g transform="translate(280,240)">
+                  <rect x="-66" y="-36" width="132" height="72" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-12" class="title" text-anchor="middle">WAF + ALB</text>
+                  <text x="0" y="6" class="mono muted" text-anchor="middle">perimeter PEP</text>
+                  <text x="0" y="22" class="mono accent" text-anchor="middle">TLS 1.3 only</text>
+                </g>
+
+                <!-- Web -->
+                <g transform="translate(470,180)">
+                  <rect x="-66" y="-36" width="132" height="72" class="fill-accent-soft stroke-accent" stroke-width="1.4" rx="2"/>
+                  <text x="0" y="-12" class="title accent" text-anchor="middle">Web Tier</text>
+                  <text x="0" y="6" class="mono accent" text-anchor="middle">SPIFFE: web-tier</text>
+                  <text x="0" y="22" class="mono muted" text-anchor="middle">SVID · 1h TTL</text>
+                </g>
+
+                <!-- API -->
+                <g transform="translate(640,240)">
+                  <rect x="-66" y="-36" width="132" height="72" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-12" class="title" text-anchor="middle">API Tier</text>
+                  <text x="0" y="6" class="mono accent" text-anchor="middle">SPIFFE: api-tier</text>
+                  <text x="0" y="22" class="mono muted" text-anchor="middle">PEP · OPA</text>
+                </g>
+
+                <!-- DB -->
+                <g transform="translate(640,380)">
+                  <rect x="-66" y="-26" width="132" height="52" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-2" class="title" text-anchor="middle">PostgreSQL</text>
+                  <text x="0" y="14" class="mono muted" text-anchor="middle">vault-issued creds</text>
+                </g>
+
+                <!-- arrows -->
+                <line x1="110" y1="240" x2="214" y2="240" class="stroke" stroke-width="1.2"/>
+                <polyline points="206,234 214,240 206,246" fill="none" class="stroke" stroke-width="1.2"/>
+
+                <line x1="346" y1="226" x2="406" y2="186" class="stroke-accent" stroke-width="1.4"/>
+                <polyline points="403,180 411,183 407,190" fill="none" class="stroke-accent" stroke-width="1.4"/>
+
+                <line x1="536" y1="196" x2="580" y2="226" class="stroke-accent" stroke-width="1.4"/>
+                <polyline points="577,220 585,225 580,232" fill="none" class="stroke-accent" stroke-width="1.4"/>
+
+                <line x1="640" y1="276" x2="640" y2="354" class="stroke-accent" stroke-width="1.4"/>
+                <polyline points="634,346 640,356 646,346" fill="none" class="stroke-accent" stroke-width="1.4"/>
+
+                <!-- control badges -->
+                <g transform="translate(170,210)">
+                  <rect x="-44" y="-12" width="88" height="24" class="fill-amber-soft" stroke="currentColor" stroke-width="0.6" rx="2"/>
+                  <text x="0" y="4" class="mono" text-anchor="middle">CTRL · TLS-1.3</text>
+                </g>
+                <g transform="translate(380,150)">
+                  <rect x="-50" y="-12" width="100" height="24" class="fill-accent-soft" stroke="currentColor" stroke-width="0.6" rx="2"/>
+                  <text x="0" y="4" class="mono" text-anchor="middle">CTRL · zt-explicit</text>
+                </g>
+                <g transform="translate(580,170)">
+                  <rect x="-46" y="-12" width="92" height="24" class="fill-accent-soft" stroke="currentColor" stroke-width="0.6" rx="2"/>
+                  <text x="0" y="4" class="mono" text-anchor="middle">CTRL · mTLS</text>
+                </g>
+                <g transform="translate(708,320)">
+                  <rect x="-58" y="-12" width="116" height="24" class="fill-accent-soft" stroke="currentColor" stroke-width="0.6" rx="2"/>
+                  <text x="0" y="4" class="mono" text-anchor="middle">CTRL · workload-id</text>
+                </g>
+
+              </svg>
+              <figcaption class="diagram-caption"><strong>Fig 4.1</strong> — A Zero Trust pattern with controls expressed as badges. Each badge corresponds to a CALM <span class="ic">control</span> applied to a relationship or node.</figcaption>
+            </figure>
+
+            <p style="margin-top: var(--space-5);">When a project team uses this pattern as the basis for a new architecture, the validator enforces that every required control is applied. Removing a control (say, downgrading from mTLS to one-way TLS for an internal call) causes the build to fail with an explicit message and the offending diff.</p>
+          </div>
+
+          <div class="callout reveal" role="region" aria-label="Module 4 key takeaways">
+            <header class="callout-header">
+              <span class="label">Key Takeaways · Module 04</span>
+            </header>
+            <div class="callout-body">
+              <ul>
+                <li>A <strong>Pattern</strong> is your firm&apos;s opinionated reference architecture, expressed as a CALM document with required controls and placeholders.</li>
+                <li>A <strong>Control</strong> is a structured object linking a requirement framework to a specific implementation, scoped to particular nodes or relationships.</li>
+                <li>Controls enable <strong>conformance</strong>, <strong>drift detection</strong>, and <strong>auto-generated ADRs</strong> — making architectural change auditable by construction.</li>
+                <li>NIST SP 800-207 (Zero Trust) is a natural early target; the same approach scales to PCI-DSS 4.0, DORA, MAS TRM, APRA CPS 234, etc.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout callout-checkpoint reveal" role="region" aria-label="Module 4 checkpoint questions">
+            <header class="callout-header">
+              <span class="label">Checkpoint · Module 04</span>
+            </header>
+            <div class="callout-body">
+              <ol>
+                <li>Pick a control your firm enforces today (e.g. &ldquo;all internet-facing endpoints must be fronted by a WAF&rdquo;). Sketch how you would express it in CALM — node, relationship, applies-to, requirement reference.</li>
+                <li>What evidence would you want CI to capture each time the validator passes, so that an external auditor would accept the CALM document as proof of design-time control?</li>
+              </ol>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ==========================================================
+         MODULE 05 — PRACTICAL USE & TOOLING
+         ========================================================== -->
+    <section class="module" id="m5">
+      <div class="container">
+
+        <header class="module-header reveal">
+          <div class="module-number">
+            <span class="label">Module</span>
+            <span class="num">05</span>
+            <span class="label">Practical Use &amp; Tooling</span>
+          </div>
+          <div class="module-title">
+            <h2>The CLI, the workflow, the roles, and a starter exercise.</h2>
+            <p class="lead">CALM is only useful if it lives where developers and architects already work — in Git, in pull requests, in CI. This module covers the everyday mechanics, then ends with a hands-on exercise you can complete in your home lab.</p>
+          </div>
+        </header>
+
+        <div class="container-text">
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">5.1</span>
+              <h3>Installing and using the CALM CLI</h3>
+            </header>
+            <div class="section-body">
+              <p>The CLI is published as an npm package, <span class="ic">@finos/calm-cli</span>. The most useful sub-commands are <span class="ic">validate</span>, <span class="ic">generate</span>, and <span class="ic">visualize</span>.</p>
+            </div>
+
+            <div class="specimen">
+              <header class="specimen-header">
+                <span class="filename">~ $ install &amp; use</span>
+                <span class="lang">SHELL</span>
+              </header>
+<pre><code><span class="tok-cmt"># install (use a user-owned npm prefix; do not sudo)</span>
+npm install -g @finos/calm-cli
+calm --version
+
+<span class="tok-cmt"># validate an architecture against the base schema</span>
+calm validate -a webapp.arch.json
+
+<span class="tok-cmt"># validate against a specific pattern</span>
+calm validate -p zero-trust-web.pattern.json -a webapp.arch.json
+
+<span class="tok-cmt"># generate a starter architecture from a pattern (fills placeholders)</span>
+calm generate -p zero-trust-web.pattern.json -o webapp.arch.json
+
+<span class="tok-cmt"># render a diagram (SVG) from an architecture</span>
+calm visualize -a webapp.arch.json -o webapp.svg
+
+<span class="tok-cmt"># render a C4-style container diagram</span>
+calm visualize -a webapp.arch.json --view container -o webapp-container.svg</code></pre>
+            </div>
+
+            <div class="callout callout-note">
+              <header class="callout-header"><span class="label">Note · exact flags</span></header>
+              <div class="callout-body">
+                <p style="font-size: 14px;">CLI flags evolve between releases; treat the snippet above as illustrative. Always confirm with <span class="ic">calm --help</span> on your installed version, and pin a specific CLI version in CI for reproducibility.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">5.2</span>
+              <h3>Integrating CALM into the developer workflow</h3>
+            </header>
+            <div class="section-body">
+              <p>The most successful adoptions treat <span class="ic">architecture.calm.json</span> like any other source file — committed to Git, reviewed in pull requests, validated in CI. The diagram below shows the loop.</p>
+            </div>
+
+            <figure class="diagram" role="img" aria-label="A horizontal CI workflow diagram showing six stages — edit, commit, validate, visualise, review, merge — with conformance and ADR steps branching off the validate stage.">
+              <svg viewBox="0 0 880 280" preserveAspectRatio="xMidYMid meet">
+                <!-- horizontal track -->
+                <line x1="50" y1="120" x2="830" y2="120" class="stroke-soft" stroke-width="0.6" stroke-dasharray="3 3"/>
+
+                <!-- stage helper -->
+                <!-- 1 edit -->
+                <g transform="translate(80,120)">
+                  <rect x="-50" y="-30" width="100" height="60" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-4" class="title" text-anchor="middle">Edit</text>
+                  <text x="0" y="14" class="mono muted" text-anchor="middle">.calm.json</text>
+                  <text x="0" y="-44" class="mono accent" text-anchor="middle">01</text>
+                </g>
+                <!-- 2 commit -->
+                <g transform="translate(220,120)">
+                  <rect x="-50" y="-30" width="100" height="60" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-4" class="title" text-anchor="middle">Commit</text>
+                  <text x="0" y="14" class="mono muted" text-anchor="middle">git push</text>
+                  <text x="0" y="-44" class="mono accent" text-anchor="middle">02</text>
+                </g>
+                <!-- 3 validate -->
+                <g transform="translate(360,120)">
+                  <rect x="-50" y="-30" width="100" height="60" class="fill-accent-soft stroke-accent" stroke-width="1.4" rx="2"/>
+                  <text x="0" y="-4" class="title accent" text-anchor="middle">Validate</text>
+                  <text x="0" y="14" class="mono accent" text-anchor="middle">calm validate</text>
+                  <text x="0" y="-44" class="mono accent" text-anchor="middle">03</text>
+                </g>
+                <!-- 4 visualise -->
+                <g transform="translate(500,120)">
+                  <rect x="-50" y="-30" width="100" height="60" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-4" class="title" text-anchor="middle">Render</text>
+                  <text x="0" y="14" class="mono muted" text-anchor="middle">SVG / C4</text>
+                  <text x="0" y="-44" class="mono accent" text-anchor="middle">04</text>
+                </g>
+                <!-- 5 review -->
+                <g transform="translate(640,120)">
+                  <rect x="-50" y="-30" width="100" height="60" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-4" class="title" text-anchor="middle">Review</text>
+                  <text x="0" y="14" class="mono muted" text-anchor="middle">PR comment</text>
+                  <text x="0" y="-44" class="mono accent" text-anchor="middle">05</text>
+                </g>
+                <!-- 6 merge -->
+                <g transform="translate(780,120)">
+                  <rect x="-50" y="-30" width="100" height="60" class="fill-bg stroke" stroke-width="1" rx="2"/>
+                  <text x="0" y="-4" class="title" text-anchor="middle">Merge</text>
+                  <text x="0" y="14" class="mono muted" text-anchor="middle">main</text>
+                  <text x="0" y="-44" class="mono accent" text-anchor="middle">06</text>
+                </g>
+
+                <!-- arrows -->
+                <line x1="130" y1="120" x2="170" y2="120" class="stroke" stroke-width="1.2"/>
+                <line x1="270" y1="120" x2="310" y2="120" class="stroke" stroke-width="1.2"/>
+                <line x1="410" y1="120" x2="450" y2="120" class="stroke" stroke-width="1.2"/>
+                <line x1="550" y1="120" x2="590" y2="120" class="stroke" stroke-width="1.2"/>
+                <line x1="690" y1="120" x2="730" y2="120" class="stroke" stroke-width="1.2"/>
+
+                <!-- branches -->
+                <line x1="360" y1="150" x2="360" y2="210" class="stroke-accent" stroke-width="1"/>
+                <line x1="360" y1="210" x2="280" y2="210" class="stroke-accent" stroke-width="1"/>
+                <line x1="360" y1="210" x2="440" y2="210" class="stroke-accent" stroke-width="1"/>
+                <g transform="translate(220,210)">
+                  <rect x="-58" y="-14" width="116" height="28" class="fill-bg stroke-accent" stroke-width="1" rx="2"/>
+                  <text x="0" y="4" class="mono accent" text-anchor="middle">conformance</text>
+                </g>
+                <g transform="translate(500,210)">
+                  <rect x="-44" y="-14" width="88" height="28" class="fill-bg stroke-accent" stroke-width="1" rx="2"/>
+                  <text x="0" y="4" class="mono accent" text-anchor="middle">ADR draft</text>
+                </g>
+              </svg>
+              <figcaption class="diagram-caption"><strong>Fig 5.1</strong> — CALM in a developer workflow. Validation forks into conformance results and an auto-drafted Architecture Decision Record.</figcaption>
+            </figure>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">5.3</span>
+              <h3>Roles — who does what?</h3>
+            </header>
+            <div class="section-body">
+              <p>Adoption fails when CALM is treated as &ldquo;the architect&apos;s file&rdquo;. Three roles share the artefact, each with a distinct responsibility.</p>
+            </div>
+
+            <div class="grid grid-3">
+              <div class="card">
+                <div class="card-title"><span class="card-num">A</span><h4>Architect</h4></div>
+                <p>Owns the <strong>Pattern</strong>. Decides which controls are required, which topologies are forbidden, and which placeholders projects can fill in.</p>
+              </div>
+              <div class="card">
+                <div class="card-title"><span class="card-num">B</span><h4>Platform PM / Engineer</h4></div>
+                <p>Owns the validator integration in CI, the CLI version pinning, the dashboard rendering, and the tooling that turns CALM diffs into ADRs.</p>
+              </div>
+              <div class="card">
+                <div class="card-title"><span class="card-num">C</span><h4>Application engineer</h4></div>
+                <p>Owns the <strong>Architecture</strong> for their service. Edits the CALM document in pull requests just like any other source file. Reviews the rendered diagram in code review.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">5.4</span>
+              <h3>Adoption signals to look for</h3>
+            </header>
+            <div class="section-body">
+              <p>FINOS members publishing patterns, vendors adding CALM export to their tools, and the CALM Hub catalogue growing are all positive adoption signals. In a Tier&nbsp;1 firm, more practical signals include:</p>
+              <ul class="stack-tight" style="margin-top: var(--space-3);">
+                <li>· Architecture review boards reviewing CALM diffs in PRs rather than slide decks.</li>
+                <li>· Internal control standards being expressed once, in CALM, and consumed everywhere.</li>
+                <li>· Drift jobs reporting against a single source of truth — the CALM document — rather than reconciling several inventories.</li>
+                <li>· Auditors asking for a CALM export instead of a Visio file.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="section reveal">
+            <header class="section-title">
+              <span class="label">5.5</span>
+              <h3>Starter exercise — your home lab</h3>
+            </header>
+            <div class="section-body">
+              <p>The fastest way to learn CALM is to model something you already operate. Try this in roughly an hour:</p>
+            </div>
+
+            <div class="callout">
+              <header class="callout-header">
+                <span class="label">Exercise · Model a small service</span>
+              </header>
+              <div class="callout-body">
+                <ul>
+                  <li>Install the CLI: <span class="ic">npm install -g @finos/calm-cli</span> in a user-owned npm prefix. Confirm with <span class="ic">calm --version</span>.</li>
+                  <li>Pick a small service you operate or know well — a personal blog, a side-project API, a homelab Kubernetes cluster.</li>
+                  <li>Create <span class="ic">homelab.arch.json</span>: nodes for your front door, your service, your database, any external integrations.</li>
+                  <li>Add at least three relationships and one flow representing the primary user journey.</li>
+                  <li>Run <span class="ic">calm validate -a homelab.arch.json</span> until it passes.</li>
+                  <li>Add a single control — for example, &ldquo;all external traffic must be HTTPS-only&rdquo; — and apply it to the relevant relationship.</li>
+                  <li>Render: <span class="ic">calm visualize -a homelab.arch.json -o homelab.svg</span>. Compare the rendered diagram against the C4 diagram you would have drawn by hand.</li>
+                  <li>Commit the file and the rendered SVG to a Git repository. You now have an architecture-as-code artefact you can review in a pull request.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="callout reveal" role="region" aria-label="Module 5 key takeaways">
+            <header class="callout-header">
+              <span class="label">Key Takeaways · Module 05</span>
+            </header>
+            <div class="callout-body">
+              <ul>
+                <li>The CLI lives at <span class="ic">@finos/calm-cli</span> on npm. Its three core commands are <strong>validate</strong>, <strong>generate</strong> and <strong>visualize</strong>.</li>
+                <li>Treat CALM documents as source code — committed, reviewed, validated in CI. The validator is the same gate your tests are.</li>
+                <li>Three distinct roles share the artefact: architect (pattern), platform team (tooling), application engineer (architecture).</li>
+                <li>Start small: a single service modelled in your home lab is enough to internalise the workflow.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="callout callout-checkpoint reveal" role="region" aria-label="Module 5 checkpoint questions">
+            <header class="callout-header">
+              <span class="label">Checkpoint · Module 05</span>
+            </header>
+            <div class="callout-body">
+              <ol>
+                <li>How would you sequence CALM adoption inside a regulated platform team — pattern first, tooling first, or pilot project first? Justify your choice.</li>
+                <li>If you ran the home lab exercise tomorrow, which of your existing services would you model first, and what would you expect to learn that would be hardest to discover by drawing a C4 diagram instead?</li>
+              </ol>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ==========================================================
+         CHEAT SHEET
+         ========================================================== -->
+    <section class="cheat-sheet" id="cheat">
+      <div class="container">
+        <div class="cheat-card reveal">
+
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: var(--space-5); flex-wrap: wrap;">
+            <div>
+              <div class="label" style="margin-bottom: var(--space-2);">One-page reference</div>
+              <h2 style="margin-bottom: var(--space-2);">CALM Cheat Sheet</h2>
+              <p class="muted" style="font-size: 14px;">A printable summary you can pin to a wall or paste into your team handbook.</p>
+            </div>
+            <div class="hero-meta-item" style="text-align: right;">
+              <span class="label">Document</span>
+              <span class="hero-meta-value">CHEAT-V1 · 2026-05-10</span>
+            </div>
+          </div>
+
+          <div class="cheat-grid">
+
+            <!-- Block 1: Key terms -->
+            <div class="cheat-block">
+              <h4>Key terms</h4>
+              <dl>
+                <dt>Node</dt><dd>An identifiable thing — service, db, actor, system, network.</dd>
+                <dt>Relationship</dt><dd>Typed edge between nodes (connects, deployed-in, etc.).</dd>
+                <dt>Interface</dt><dd>How a node exposes itself (host:port, route, topic).</dd>
+                <dt>Control</dt><dd>Policy/compliance requirement bound to nodes/relationships.</dd>
+                <dt>Flow</dt><dd>Sequenced traversal across multiple relationships.</dd>
+                <dt>Metadata</dt><dd>Key/value tags — owner, classification, scope, etc.</dd>
+                <dt>Pattern</dt><dd>Reusable template; defines required controls + structure.</dd>
+                <dt>Architecture</dt><dd>Concrete instance of a pattern; validates against it.</dd>
+              </dl>
+            </div>
+
+            <!-- Block 2: Minimal document -->
+            <div class="cheat-block">
+              <h4>Minimal document</h4>
+<pre style="font-family: var(--font-mono); font-size: 11px; line-height: 1.55; background: var(--color-surface-alt); border: 1px solid var(--color-border); padding: var(--space-3); border-radius: 2px; overflow-x: auto;"><code>{
+  "$schema": "https://calm.finos.org/release/1.0/meta/calm.json",
+  "name": "Hello",
+  "description": "Minimal CALM",
+  "nodes": [],
+  "relationships": []
+}</code></pre>
+              <ul>
+                <li>Only <span class="ic">$schema</span>, <span class="ic">name</span>, <span class="ic">nodes</span>, <span class="ic">relationships</span> are required.</li>
+                <li>Add <span class="ic">interfaces</span>, <span class="ic">controls</span>, <span class="ic">flows</span>, <span class="ic">metadata</span> as the system grows.</li>
+                <li>Reference a <span class="ic">pattern</span> to inherit constraints.</li>
+              </ul>
+            </div>
+
+            <!-- Block 3: CLI commands -->
+            <div class="cheat-block">
+              <h4>CLI · @finos/calm-cli</h4>
+              <table class="mini-table">
+                <thead>
+                  <tr><th>Command</th><th>Purpose</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><span class="ic">calm validate -a a.json</span></td><td>Validate against base schema.</td></tr>
+                  <tr><td><span class="ic">calm validate -p p.json -a a.json</span></td><td>Validate against pattern.</td></tr>
+                  <tr><td><span class="ic">calm generate -p p.json -o a.json</span></td><td>Scaffold from pattern.</td></tr>
+                  <tr><td><span class="ic">calm visualize -a a.json -o a.svg</span></td><td>Render diagram.</td></tr>
+                  <tr><td><span class="ic">calm --help</span></td><td>Show all sub-commands.</td></tr>
+                  <tr><td><span class="ic">calm --version</span></td><td>Print installed CLI version.</td></tr>
+                </tbody>
+              </table>
+              <ul>
+                <li>Install via <span class="ic">npm i -g @finos/calm-cli</span>.</li>
+                <li>Pin the version in CI; do not float to <span class="ic">latest</span>.</li>
+              </ul>
+            </div>
+
+            <!-- Block 4: When to use -->
+            <div class="cheat-block">
+              <h4>Decision guide</h4>
+              <table class="mini-table">
+                <thead>
+                  <tr><th>If you need…</th><th>Reach for</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Communicate with stakeholders</td><td>C4 (rendered from CALM)</td></tr>
+                  <tr><td>Sketch a quick idea</td><td>Mermaid</td></tr>
+                  <tr><td>Provision real infrastructure</td><td>Terraform / Crossplane</td></tr>
+                  <tr><td>Enforce a reference architecture</td><td>CALM <em>Pattern</em></td></tr>
+                  <tr><td>Document a specific system</td><td>CALM <em>Architecture</em></td></tr>
+                  <tr><td>Tie design to a control framework</td><td>CALM Controls</td></tr>
+                  <tr><td>Catalogue enterprise capabilities</td><td>ArchiMate / TOGAF</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Block 5: Anti-patterns -->
+            <div class="cheat-block">
+              <h4>Common anti-patterns</h4>
+              <ul>
+                <li>Treating CALM as a diagram tool — the diagram is a <em>view</em>, the JSON is the spec.</li>
+                <li>Letting the architecture document drift from runtime — wire up drift detection from day one.</li>
+                <li>Creating a single mega-pattern. Prefer small, focused patterns (e.g. <span class="ic">zero-trust-web</span>, <span class="ic">batch-job</span>).</li>
+                <li>Hand-rolling JSON without the CLI. Validate locally before pushing.</li>
+                <li>Copy-pasting controls between docs. Express controls once, in patterns; apply them by reference.</li>
+              </ul>
+            </div>
+
+            <!-- Block 6: Resources -->
+            <div class="cheat-block">
+              <h4>Authoritative sources</h4>
+              <ul>
+                <li><span class="ic">github.com/finos/architecture-as-code</span> — schema, CLI, hub UI, reference patterns.</li>
+                <li><span class="ic">npmjs.com/package/@finos/calm-cli</span> — official CLI.</li>
+                <li><span class="ic">finos.org</span> — project page, governance, charter.</li>
+                <li>NIST SP 800-207 — Zero Trust framework cited in pattern examples.</li>
+                <li>FINOS AI Governance Framework — control catalogue extending CALM.</li>
+              </ul>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==========================================================
+       FOOTER
+       ========================================================== -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div>
+          <h5>Colophon</h5>
+          <p class="colophon">
+            Set in <strong>Noto Sans</strong> and <strong>Noto Sans Mono</strong>. Light theme primary; dark theme available.
+            Single-file HTML, no framework, no CDN beyond fonts. Diagrams hand-drawn in inline SVG. Written for product and architecture leaders working in regulated environments.
+          </p>
+        </div>
+        <div>
+          <h5>Author</h5>
+          <ul>
+            <li>James Buckett</li>
+            <li><a class="inline" href="https://github.com/jamesbuckett" rel="noopener noreferrer" target="_blank">github.com/jamesbuckett</a></li>
+            <li><a class="inline" href="https://www.linkedin.com/in/jamesbuckett" rel="noopener noreferrer" target="_blank">linkedin/in/jamesbuckett</a></li>
+          </ul>
+        </div>
+        <div>
+          <h5>Verify</h5>
+          <ul>
+            <li><a class="inline" href="https://github.com/finos/architecture-as-code" rel="noopener noreferrer" target="_blank">finos/architecture-as-code</a></li>
+            <li><a class="inline" href="https://www.finos.org/" rel="noopener noreferrer" target="_blank">finos.org</a></li>
+            <li><a class="inline" href="https://www.npmjs.com/package/@finos/calm-cli" rel="noopener noreferrer" target="_blank">@finos/calm-cli</a></li>
+          </ul>
+        </div>
+      </div>
+      <hr/>
+      <p style="font-size: 12px; color: var(--color-text-tertiary);">© 2026 James Buckett. Tutorial content paraphrases public FINOS specifications; verify all claims against the official repository before applying inside a regulated environment.</p>
+    </div>
+  </footer>
+
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ----- Theme toggle -----
+      var STORAGE_KEY = 'calm-tutorial-theme';
+      var root = document.documentElement;
+      var btn = document.getElementById('themeToggle');
+
+      function applyTheme(t) {
+        root.setAttribute('data-theme', t);
+      }
+      function readTheme() {
+        try {
+          var s = localStorage.getItem(STORAGE_KEY);
+          if (s === 'light' || s === 'dark') return s;
+        } catch (e) {}
+        return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      applyTheme(readTheme());
+      btn.addEventListener('click', function () {
+        var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+        applyTheme(next);
+        try { localStorage.setItem(STORAGE_KEY, next); } catch (e) {}
+      });
+
+      // ----- Scroll-spy nav -----
+      var navLinks = Array.prototype.slice.call(document.querySelectorAll('.nav-modules a'));
+      var sectionMap = {};
+      navLinks.forEach(function (a) {
+        var id = a.getAttribute('data-target');
+        if (id) sectionMap[id] = a;
+      });
+      var sections = Object.keys(sectionMap).map(function (id) {
+        return document.getElementById(id);
+      }).filter(Boolean);
+
+      function setActive(id) {
+        navLinks.forEach(function (a) {
+          a.classList.toggle('active', a.getAttribute('data-target') === id);
+        });
+      }
+      if ('IntersectionObserver' in window && sections.length) {
+        var spy = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) setActive(e.target.id);
+          });
+        }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+        sections.forEach(function (s) { spy.observe(s); });
+      }
+
+      // ----- Reveal on scroll -----
+      if ('IntersectionObserver' in window && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        var reveals = document.querySelectorAll('.reveal');
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) {
+              e.target.classList.add('in');
+              io.unobserve(e.target);
+            }
+          });
+        }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
+        reveals.forEach(function (el) { io.observe(el); });
+      } else {
+        Array.prototype.forEach.call(document.querySelectorAll('.reveal'), function (el) { el.classList.add('in'); });
+      }
+    })();
+  </script>
+</body>
+</html>

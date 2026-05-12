@@ -1,0 +1,3 @@
+# Dev screenshots — only the README hero (preview.png) is tracked
+screenshots/*.png
+!screenshots/preview.png

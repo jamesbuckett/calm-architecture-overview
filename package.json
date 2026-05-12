@@ -1,0 +1,24 @@
+{
+  "name": "calm-architecture-overview",
+  "version": "1.0.0",
+  "description": "A single-file HTML tutorial on the FINOS **Common Architecture Language Model** (CALM), written for product and architecture leaders working in regulated financial-services environments.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jamesbuckett/calm-architecture-overview.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/jamesbuckett/calm-architecture-overview/issues"
+  },
+  "homepage": "https://github.com/jamesbuckett/calm-architecture-overview#readme",
+  "devDependencies": {
+    "playwright": "^1.59.1"
+  }
+}

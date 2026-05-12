@@ -3,10 +3,13 @@
 ![Topic](https://img.shields.io/badge/topic-architecture--as--code-0E5E57?style=flat-square)
 ![Format](https://img.shields.io/badge/format-single--file%20HTML-111?style=flat-square)
 ![Spec](https://img.shields.io/badge/FINOS%20CALM-v1.0-blue?style=flat-square)
+![License](https://img.shields.io/badge/license-MIT-1F8B4C?style=flat-square)
 
 A single-file HTML tutorial on the FINOS **Common Architecture Language Model** (CALM), written for product and architecture leaders working in regulated financial-services environments.
 
 The rendered tutorial is [`index.html`](./index.html). Open it directly in a browser — there is no build step.
+
+![CALM tutorial — desktop hero](./screenshots/preview.png)
 
 ---
 
@@ -35,14 +38,30 @@ start     index.html       # Windows
 
 The file is self-contained and can also be served from any static host (GitHub Pages, S3, plain Nginx).
 
+## Regenerating the screenshots
+
+The repository ships with a Playwright-based harness for visual validation across mobile / tablet / desktop viewports.
+
+```bash
+npm install              # one-time
+node screenshot.mjs      # writes mobile.png, tablet.png, desktop.png to ./screenshots/
+```
+
+The hero image above (`screenshots/preview.png`) is a viewport-only desktop capture at 1440 × 900 @2x. The harness itself captures full-page screenshots used during design iteration.
+
 ## Repository layout
 
 ```
 .
-├── CLAUDE.md      Project conventions for Claude Code — single-file rules, design standards
-├── PROMPT.md      The source brief used to generate the tutorial
-├── index.html     The rendered tutorial — single self-contained file
-└── README.md      This file
+├── CLAUDE.md                  Project conventions — single-file rules, design standards
+├── LICENSE                    MIT licence
+├── PROMPT.md                  Source brief used to generate the tutorial
+├── README.md                  This file
+├── index.html                 The rendered tutorial — single self-contained file
+├── package.json               Dev dependency: Playwright (screenshots only)
+├── screenshot.mjs             Playwright harness — mobile / tablet / desktop captures
+└── screenshots/
+    └── preview.png            Desktop hero used by this README
 ```
 
 ## How it was built
@@ -66,6 +85,10 @@ CALM is an evolving specification. This tutorial paraphrases public FINOS materi
 - [finos.org](https://www.finos.org/) — project page, governance, and charter
 
 Schema URLs and CLI flags can change between releases. The tutorial flags this in two places (Modules 03 and 05); always confirm against your installed CLI version.
+
+## License
+
+Released under the [MIT License](./LICENSE). The tutorial paraphrases public FINOS material; the FINOS CALM specification itself is governed by its own [licence and governance](https://www.finos.org/).
 
 ## Author
 

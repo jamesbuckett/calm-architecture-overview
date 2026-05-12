@@ -1,5 +1,9 @@
 # CALM — A Structured Primer in Architecture-as-Code
 
+![Topic](https://img.shields.io/badge/topic-architecture--as--code-0E5E57?style=flat-square)
+![Format](https://img.shields.io/badge/format-single--file%20HTML-111?style=flat-square)
+![Spec](https://img.shields.io/badge/FINOS%20CALM-v1.0-blue?style=flat-square)
+
 A single-file HTML tutorial on the FINOS **Common Architecture Language Model** (CALM), written for product and architecture leaders working in regulated financial-services environments.
 
 The rendered tutorial is [`index.html`](./index.html). Open it directly in a browser — there is no build step.
